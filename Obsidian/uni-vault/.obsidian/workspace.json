@@ -1,0 +1,222 @@
+{
+  "main": {
+    "id": "af704eed4a0f91fe",
+    "type": "split",
+    "children": [
+      {
+        "id": "5a27697f494bb394",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "bf56761fca3be956",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Progettazione algoritmi e computabilità/Appunti P.A.C.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Appunti P.A.C"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "53c16bb8f86715f9",
+    "type": "split",
+    "children": [
+      {
+        "id": "b4ea3a4e49e86471",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "96d322d6ea6ffb09",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Esplora file"
+            }
+          },
+          {
+            "id": "cbf453b3b9490799",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Ricerca"
+            }
+          },
+          {
+            "id": "9c7b5162f224fe79",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Segnalibri"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200,
+    "collapsed": true
+  },
+  "right": {
+    "id": "c8c318b39d0eadf7",
+    "type": "split",
+    "children": [
+      {
+        "id": "f2c45e361860329d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7f080476c271f697",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "GS ICT/Riassunto GSICT 2.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Riferimenti"
+            }
+          },
+          {
+            "id": "d82d59b74d0865e5",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Benvenuto.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Collegamenti in uscita da Benvenuto"
+            }
+          },
+          {
+            "id": "fb337c87b02e3989",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etichette"
+            }
+          },
+          {
+            "id": "e2e4984364bcf6bf",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Tutte le proprietà"
+            }
+          },
+          {
+            "id": "af593ed90dde582a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Benvenuto.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Struttura di Benvenuto"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "obsidian-git:Open Git source control": false,
+      "obsidian-excalidraw-plugin:New drawing": false,
+      "switcher:Apri selettore rapido": false,
+      "daily-notes:Apri nota giornaliera": false,
+      "graph:Apri vista grafo": false,
+      "canvas:Crea nuova lavagna": false,
+      "templates:Inserisci modello": false,
+      "command-palette:Apri riquadro comandi": false,
+      "bases:Crea nuova Base": false
+    }
+  },
+  "active": "bf56761fca3be956",
+  "lastOpenFiles": [
+    "Progettazione algoritmi e computabilità/Appunti P.A.C.md",
+    "Riassunto IMAD/Riassunto IMAD.md",
+    "PAC/Drawing 2026-11-06 16.50.30.excalidraw.md",
+    "Imprenditorialità innovazione e marketing/riassunto/T01.md",
+    "Gestione Aziendale/RIASSUNTO GS.md",
+    "Marketing Analytics - Parte 1.md",
+    "Progettazione algoritmi e computabilità",
+    "Senza nome.md",
+    "Senza nome.canvas",
+    "file:/Users/rob/Desktop/reverse_engineering_tendaa_cams/ARCHITETTURA_PROGETTO.md",
+    "file:/Users/rob/Desktop/RiassuntoGSICT/Banco domande GSICT.md",
+    "GS ICT/Riassunto GSICT 2.md",
+    "GS ICT/Gestione Sistemi ICT.md",
+    "GS ICT/Riassunto GSICT.md",
+    "RTLC",
+    "file:/Users/rob/Downloads/files/ANALYSIS.md",
+    "Gestione Aziendale/Parte 2.md",
+    "Gestione Aziendale/Parte 3.md",
+    "Gestione Aziendale",
+    "GS ICT",
+    "Imprenditorialità innovazione e marketing/riassunto/Imprenditorialità innovazione e marketing.md",
+    "Riassunto IMAD",
+    "Imprenditorialità innovazione e marketing/Senza nome.md",
+    "Senza nome 1.canvas",
+    "Benvenuto.md",
+    "Imprenditorialità innovazione e marketing/riassunto",
+    "Imprenditorialità innovazione e marketing/images",
+    "Imprenditorialità innovazione e marketing"
+  ]
+}
