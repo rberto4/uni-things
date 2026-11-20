@@ -60,3 +60,5 @@ Analisi teorica con :
 Ogni istruzione consuma una unità di tempo e richiede una unità di spazio
 E' un approccio semplice ma poco efficiente e veritiero.
 La complessità è proporzionale al numero di bit dell'operando e l'accesso è proporzionale al numero di bit dell'indirizzo
+
+
