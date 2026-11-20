@@ -1,0 +1,210 @@
+\chapter{Affidabilità e protezione}\label{cap3-protezione}\label{cap:prot}
+
+\begin{nota}[Come si riconosce]
+Testo del tipo \emph{\guillemotleft{}un cammino ottico di 750~km, 4 guasti/anno ogni 1000~km, MTTR 18~h: si calcoli l'availability; se non rispetta il 99.99\% si usi protezione 1:1 (oppure 1:2, 2:1)\dots\guillemotright{}}. Compare in $\approx 60\%$ dei temi (quasi sempre come Es.~2 o~3). Il calcolo è meccanico: \textbf{guasti/anno $\to$ MTTF $\to A\to$ formula della protezione $\to U\to$ classe di servizio}.
+\end{nota}
+
+%==========================================================
+\section{Teoria minima}
+
+\subsection{Un componente}
+\begin{formula}[Availability di un cammino non protetto]
+\begin{align*}
+g&=\text{(guasti/anno per 1000 km)}\cdot\frac{L_{\text{km}}}{1000},&
+\mathrm{MTTF}&=\frac{8760\ \text{h}}{g},&
+\mathrm{MTTR}&=\text{dato (ore)}\\
+A&=\frac{\mathrm{MTTF}}{\mathrm{MTTF}+\mathrm{MTTR}}=\frac{\mu}{\lambda+\mu},&
+U&=1-A=\frac{\rho}{1+\rho},&
+\rho&=\frac\lambda\mu=\frac{\mathrm{MTTR}}{\mathrm{MTTF}}
+\end{align*}
+con $\lambda=1/\mathrm{MTTF}$ tasso di guasto e $\mu=1/\mathrm{MTTR}$ tasso di riparazione ($1$ anno $=8760$ h).
+\end{formula}
+Il numero di guasti \textbf{scala con la lunghezza} ($750$~km $\Rightarrow0.75\cdot g_{1000}$). Il cammino è una \emph{serie} di tratti: la disponibilità totale è il prodotto delle disponibilità; ma negli esercizi il cammino è già dato come un unico componente di lunghezza $L$.
+
+\begin{formula}[Serie e parallelo]\mio
+\[
+\text{serie:}\ A=\prod_iA_i,\qquad\qquad
+\text{parallelo (}n\text{ percorsi indipendenti):}\ A=1-\prod_i(1-A_i).
+\]
+\end{formula}
+
+\subsection{Classi di servizio (SLA)}
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+ & Premium & Gold & Silver & Bronze\\
+\midrule
+Unavailability $U<$ & $10^{-5}$ & $10^{-4}$ & $10^{-3}$ & $10^{-2}$\\
+Availability $A\ge$ & 99.999\% & 99.99\% & 99.9\% & 99\%\\
+\bottomrule
+\end{tabular}
+\end{center}
+Nei temi \guillemotleft{}Gold\guillemotright{} $\equiv$ requisito $A\ge99.99\%$ ($U<10^{-4}$), \guillemotleft{}Silver\guillemotright{} $\equiv A\ge99.9\%$.
+
+\begin{nota}[Quale classe?]
+Una connessione è in una classe se $U$ è \emph{minore} della soglia di quella classe ma \emph{non} della soglia della classe superiore. Es.: $U=1.16\cdot10^{-5}$ è Gold (è $<10^{-4}$ ma non $<10^{-5}$); $U=7.5\cdot10^{-6}$ è Premium.
+\end{nota}
+
+%==========================================================
+\section{Protezione dedicata (1+1, 1:1, $M$:1)}
+Ogni cammino di lavoro ha $M$ cammini di backup \textbf{dedicati} e \textbf{link-disjoint} (guasti indipendenti). La connessione è giù solo se \emph{tutti} i $M+1$ cammini sono giù contemporaneamente:
+\begin{formula}[Scorciatoia per la protezione dedicata]
+\[
+U_{1:1}=(1-A)^2,\qquad U_{M:1}=(1-A)^{M+1},\qquad A_{M:1}=1-(1-A)^{M+1}.
+\]
+Equivalente alla catena: $U_{1:1}=p_2=\dfrac{\rho^2}{(1+\rho)^2}$ e $U_{2:1}=\dfrac{\rho^3}{(1+\rho)^3}$, perché $\dfrac{\rho}{1+\rho}=1-A$.
+\end{formula}
+Il professore costruisce la catena a 3 stati per il caso 1:1 (poi verifica con $(1-A)^2$) e usa direttamente la formula per 2:1. Tu puoi usare \textbf{sempre la scorciatoia}, ma tieni a mente la catena per i casi condivisi.
+
+%==========================================================
+\section{Protezione condivisa 1:$N$ e $M$:$N$}\label{cap3-condivisa}
+$N$ cammini di lavoro condividono $M$ cammini di backup (tipicamente $M=1$). \textbf{Un backup condiviso non basta se si guastano due connessioni insieme}: per questo $U_{1:N}>U_{1:1}$.
+
+\subsection{Catena e distribuzione}
+Componenti totali $N+M$, ciascuno guasto/riparato in modo indipendente. Stato $n=$ \emph{numero di componenti (cammini di lavoro o backup) guasti}. Tasso di guasto dallo stato $n$: $(N+M-n)\lambda$; tasso di riparazione: $n\mu$.
+
+\begin{center}
+\textbf{1:3} ($N=3$, $M=1$, 4 componenti, stati $0..4$)\\[2pt]
+\bdchain{4}{0/{$4\lambda$},1/{$3\lambda$},2/{$2\lambda$},3/{$\lambda$}}{1/{$\mu$},2/{$2\mu$},3/{$3\mu$},4/{$4\mu$}}{}
+\end{center}
+\begin{center}
+\textbf{1:1} (2 componenti, stati $0..2$)\\[2pt]
+\bdchain{2}{0/{$2\lambda$},1/{$\lambda$}}{1/{$\mu$},2/{$2\mu$}}{}
+\end{center}
+
+Poiché i componenti sono indipendenti, la distribuzione è \textbf{binomiale} (non serve risolvere i tagli):
+\begin{formula}[$p(n)$ e unavailability $M$:$N$]
+\[
+p(n)=\binom{N+M}{n}\frac{\rho^n}{(1+\rho)^{N+M}},\qquad
+U(N,M)=\sum_{n=M+1}^{N+M}\frac{n-M}{N}\,p(n)
+\]
+Caso $M=1$ (1:$N$): $\displaystyle U=\sum_{n=2}^{N+1}\frac{n-1}{N}\,p(n)$.
+\end{formula}
+\emph{Perché}: nello stato $n\ge M+1$ ci sono $n-M$ connessioni su $N$ senza backup; una connessione \emph{scelta a caso} è fra queste con prob.\ $(n-M)/N$.
+
+\begin{formula}[Casi da ricordare]
+\begin{align*}
+\text{1:1:}\quad U&=p_2=\frac{\rho^2}{(1+\rho)^2}=(1-A)^2\\
+\text{1:2:}\quad U&=\tfrac12p_2+p_3,\quad p_2=\frac{3\rho^2}{(1+\rho)^3},\ p_3=\frac{\rho^3}{(1+\rho)^3}\\
+\text{1:3:}\quad U&=\tfrac13\,p_2+\tfrac23\,p_3+p_4,\quad p_n=\binom4n\frac{\rho^n}{(1+\rho)^4}
+\end{align*}
+\end{formula}
+
+\begin{attenzione}[Un backup per due connessioni peggiora $U$]
+A parità di $\rho$: $U_{1:1}<U_{1:2}<U_{1:3}\dots$ Il guadagno è risparmiare risorse (1 backup invece di $N$). Se il testo chiede \guillemotleft{}quale conviene\guillemotright{}, confronta $U$ con il requisito: se anche la 1:2 lo rispetta, \emph{conviene la 1:2} (un cammino in meno).
+\end{attenzione}
+
+%==========================================================
+\section{Priorità Gold/Silver sul backup condiviso}
+$N=N_G+N_S$ connessioni condividono un solo backup; le Gold possono \emph{prelazionare} (preemption) il backup a danno delle Silver. Le Gold \guillemotleft{}non vedono\guillemotright{} le Silver: si comportano come in un sistema 1:$N_G$.
+\begin{formula}[Unavailability con priorità]
+\[
+U_G=U(N_G,1)\ \ \text{(catena 1:}N_G\text{, cioè }N_G+1\text{ componenti)},\qquad
+U_S=\frac{U(N,1)\cdot N-U_G\cdot N_G}{N_S}
+\]
+Conservazione: $N\,U=N_GU_G+N_SU_S$ ($U(N,1)$ = unavailability media 1:$N$ \emph{senza} priorità).
+\end{formula}
+\begin{attenzione}
+In $U_G$ le probabilità $p(n)$ sono quelle della catena \textbf{1:$N_G$} (con $N_G+1$ componenti), \emph{non} della catena $1{:}N$. Con $N_G=1$: $U_G=(1-A)^2$.
+\end{attenzione}
+
+%==========================================================
+\section{Procedura}
+\begin{procedura}
+\begin{enumerate}[leftmargin=*]
+\item $g=g_{1000}\cdot L/1000$ guasti/anno; $\mathrm{MTTF}=8760/g$ ore; $\rho=\mathrm{MTTR}/\mathrm{MTTF}$.
+\item $A=\mathrm{MTTF}/(\mathrm{MTTF}+\mathrm{MTTR})$, $U=1-A$. Confronta col requisito (99.99\% $\Leftrightarrow U<10^{-4}$).
+\item Se non basta: scegli lo schema. \textbf{Dedicato}: $U=(1-A)^{M+1}$. \textbf{Condiviso} 1:$N$: $U=\sum_{n\ge2}\frac{n-1}{N}p(n)$ con $p(n)$ binomiale.
+\item $A_{\text{prot}}=1-U$. Confronta con il requisito e indica la classe.
+\item Con priorità: $U_G$ dalla catena 1:$N_G$, poi $U_S=(UN-U_GN_G)/N_S$.
+\end{enumerate}
+\end{procedura}
+\begin{nota}[Cifre significative]
+$\rho$ è piccolo ($\sim5\cdot10^{-3}$) e le soglie sono $10^{-4},10^{-5}$: tieni almeno 4--5 cifre in $U$. L'availability si scrive con 5--7 decimali (es.\ $0.9999625$), altrimenti $99.99\%$ e $99.996\%$ sembrano uguali.
+\end{nota}
+
+%==========================================================
+\section{Esercizi svolti}
+
+\begin{esempio}{27/05/2020 --- cammino 750 km, 1:1}
+\textbf{Dati.} $750$ km, $4$ guasti/anno/1000 km, MTTR $=18$ h, requisito $A\ge99.99\%$. Si chiede $A$ e, se insufficiente, protezione 1:1 con backup disgiunto di pari lunghezza.
+
+\textbf{Svolgimento.}
+\begin{enumerate}[leftmargin=*,nosep]
+\item $g=4\cdot0.75=3$ guasti/anno $\Rightarrow\mathrm{MTTF}=8760/3=2920$ h.
+\item $A=\dfrac{2920}{2920+18}=\dfrac{2920}{2938}=0.99387$ $\Rightarrow$ \textbf{non} rispetta $99.99\%$.
+\item $\lambda=1/2920$, $\mu=1/18$, $\rho=18/2920=0.0061644$. Catena 1:1: $p_1=2\rho p_0$, $p_2=\rho^2p_0$, $p_0=1/(1+\rho)^2$.
+\item $U_{1:1}=p_2=\dfrac{\rho^2}{(1+\rho)^2}=3.7535\cdot10^{-5}$, $A_{1:1}=0.9999625$ $\Rightarrow$ \textbf{rispetta} il requisito.
+\item Controllo: $1-(1-A)^2=1-(0.0061266)^2=0.9999625$ \checkmark.
+\end{enumerate}
+\end{esempio}
+
+\begin{esempio}{31/05/2006 --- 1:2 con priorità Gold/Silver}
+\textbf{Dati.} Due connessioni da $750$ km, $5$ guasti/anno/1000 km, MTTR $=18$ h. Una richiede Gold ($\ge99.99\%$), l'altra Silver ($\ge99.9\%$). Backup condiviso 1:2 con preemption per la Gold.
+
+\textbf{Svolgimento.}
+\begin{enumerate}[leftmargin=*,nosep]
+\item $g=3.75$ $\Rightarrow\mathrm{MTTF}=2336$ h, $A=\dfrac{2336}{2354}=0.99235$, $\rho=\dfrac{18}{2336}=0.0077055$. Nessuna classe è soddisfatta senza protezione.
+\item \textbf{Gold} $=$ 1:1 (le Silver non la disturbano): $U_G=(1-A)^2=5.847\cdot10^{-5}\Rightarrow A_G=0.99994153$ \textbf{OK} ($\ge99.99\%$).
+\item \textbf{Catena 1:2} (3 componenti): $U=\tfrac12p_2+p_3=8.748\cdot10^{-5}$.
+\item \textbf{Silver:} $U_S=\dfrac{U\cdot N-U_G\cdot N_G}{N_S}=\dfrac{8.748\cdot10^{-5}\cdot2-5.847\cdot10^{-5}\cdot1}{1}=1.1649\cdot10^{-4}$, $A_S=0.99988$ \textbf{OK} ($\ge99.9\%$).
+\end{enumerate}
+\end{esempio}
+
+\begin{esempio}{27/06/2006 --- 1600 km: 1:1 oppure 2:1?}
+\textbf{Dati.} $1600$ km, $5$ guasti/anno/1000 km, MTTR $=12$ h, requisito Gold.
+
+\textbf{Svolgimento.}
+\begin{enumerate}[leftmargin=*,nosep]
+\item $g=8$, $\mathrm{MTTF}=1095$ h, $A=\dfrac{1095}{1107}=0.98916$ ($U=1.08\cdot10^{-2}$, solo Bronze).
+\item \textbf{1:1:} $U=(1-A)^2=1.175\cdot10^{-4}>10^{-4}$, $A=0.999882$ $\Rightarrow$ \textbf{non} basta.
+\item \textbf{2:1} (1 principale $+$ 2 backup dedicati): $U=(1-A)^3=1.27\cdot10^{-6}$, $A=0.9999987$ $\Rightarrow$ \textbf{soddisfa} anche Premium ($<10^{-5}$).
+\end{enumerate}
+\end{esempio}
+
+\begin{esempio}{29/06/2005 --- 800 km: 1:1 per entrambe oppure 1:2}
+\textbf{Dati.} Due connessioni su cammini disgiunti da $800$ km, $5$ guasti/anno/1000 km, MTTR $=12$ h, requisito $A\ge99.99\%$. Confronto fra (a) 1:1 per ciascuna, (b) un solo backup condiviso 1:2.
+
+\textbf{Svolgimento.}
+\begin{enumerate}[leftmargin=*,nosep]
+\item $g=4$, $\mathrm{MTTF}=2190$ h, $A=\dfrac{2190}{2202}=0.99455$, $\rho=\dfrac{12}{2190}=0.0054795$.
+\item (a) 1:1: $U=p_2=2.970\cdot10^{-5}$, $A=0.9999703$ \textbf{OK}.
+\item (b) 1:2: $p_2=\dfrac{3\rho^2}{(1+\rho)^3}$, $p_3=\dfrac{\rho^3}{(1+\rho)^3}$, $U=\tfrac12p_2+p_3=4.447\cdot10^{-5}$, $A=0.9999555$ \textbf{OK}.
+\item Entrambe rispettano il vincolo: \textbf{conviene la 1:2} (un solo cammino di backup, meno risorse).
+\end{enumerate}
+\end{esempio}
+
+%==========================================================
+\section{Tabella numerica dei temi}
+\begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrll}
+\toprule
+Tema & $L$ & MTTR & MTTF & $U$ (no prot.) & $U_{1:1}$ & Altro & Esito\\
+\midrule
+2005-06-01 & 500 & 12 & 3504 & $3.41\cdot10^{-3}$ & $1.165\cdot10^{-5}$ & -- & Br.$\to$Gold\\
+2005-06-29 & 800 & 12 & 2190 & $5.45\cdot10^{-3}$ & $2.970\cdot10^{-5}$ & 1:2: $4.45\cdot10^{-5}$ & 1:1, 1:2 OK\\
+2006-05-31 & 750 & 18 & 2336 & $7.65\cdot10^{-3}$ & $5.847\cdot10^{-5}$ & $U_S{=}1.16\cdot10^{-4}$ & G+S OK\\
+2006-06-27 & 1600 & 12 & 1095 & $1.084\cdot10^{-2}$ & $1.175\cdot10^{-4}$ & 2:1: $1.27\cdot10^{-6}$ & 1:1 NO, 2:1 OK\\
+2007-06-12\mio & 1500 & 18 & 1460 & $1.218\cdot10^{-2}$ & $1.483\cdot10^{-4}$ & 2:1: $1.81\cdot10^{-6}$ & 1:1 NO, 2:1 OK\\
+2008-05-28 & 800 & 6 & 2190 & $2.73\cdot10^{-3}$ & $7.47\cdot10^{-6}$ & -- & Br.$\to$Prem.\\
+2010-06-15 & 500 & 24 & 3504 & $6.80\cdot10^{-3}$ & $4.63\cdot10^{-5}$ & -- & 1:1 OK\\
+2020-05-27 & 750 & 18 & 2920 & $6.13\cdot10^{-3}$ & $3.75\cdot10^{-5}$ & -- & 1:1 OK\\
+\bottomrule
+\end{tabular}
+\end{center}
+$L$ in km, MTTR e MTTF in ore. Tassi di guasto: $5$/anno/1000 km, tranne 2007-06-12 e 2020: $4$. La riga 2007-06-12 è ricalcolata da me (soluzione ufficiale non disponibile).
+
+%==========================================================
+\section{Errori frequenti}
+\begin{attenzione}[Elenco di trappole]
+\begin{enumerate}[leftmargin=*]
+\item Dimenticare di scalare i guasti con la lunghezza ($L/1000$).
+\item MTTF in \textbf{ore}: $8760/g$ (non usare i giorni né il tasso per 1000 km).
+\item $\rho=\mathrm{MTTR}/\mathrm{MTTF}$ (piccolo!), \emph{non} il contrario.
+\item Troppo poche cifre: $0.9999$ non permette di distinguere $99.99\%$ da $99.996\%$.
+\item $U_G$ nel caso con priorità: usa la catena 1:$N_G$, non 1:$N$.
+\item Backup condiviso $\ne$ dedicato: $(1-A)^{M+1}$ vale solo con backup \emph{dedicati}.
+\item Confondere $M$:$N$ con $N$:$M$: \guillemotleft{}2:1\guillemotright{} $=$ 1 lavoro $+$ 2 backup dedicati $\Rightarrow(1-A)^3$.
+\item Classe: $U$ \emph{minore} della soglia; se $U=1.17\cdot10^{-4}$ la classe Gold \textbf{non} è soddisfatta.
+\end{enumerate}
+\end{attenzione}

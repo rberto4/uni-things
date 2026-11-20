@@ -1,0 +1,33 @@
+\chapter*{Come usare la guida}
+\addcontentsline{toc}{chapter}{Come usare la guida}
+\markboth{Come usare la guida}{}
+
+\textbf{Formato dell'esame.} Prova scritta di 1h20--1h30: \textbf{3 esercizi} + \textbf{1--2 domande di teoria} (+ una domanda di simulazione per chi sostiene la parte da 9 CFU).
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{Xlcl}
+\toprule
+Tipo di esercizio & Dove & Frequenza & Peso\\
+\midrule
+Catene di Markov / code & cap.~\ref{cap:code} & 11/12 (+2020, 2025) & quasi sempre Es.~1\\
+Generazione di variabili casuali & cap.~\ref{cap:gen} & 8/12, sempre dal 2008 & facile, punti sicuri\\
+Affidabilità e protezione & cap.~\ref{cap:prot} & 7/12 & formule fisse\\
+Grado di servizio di una rete & cap.~\ref{cap:reti} & 5/12 & calcolo lungo, metodo fisso\\
+Lunghezza ottima del pacchetto & cap.~\ref{cap:arq} & 2/12 & derivata e basta\\
+Token bucket / potenza M/M/1 & cap.~\ref{cap:code}, \ref{cap:reti}, \ref{cap:flusso} & 1 + 1 (+ 2025) & esercizio singolo\\
+Simulazione a eventi & cap.~\ref{cap:sim} & 2025 (9 CFU) & pseudo-codice\\
+Teoria: Little (Stidham), Burke & cap.~\ref{cap:teoria} & quasi ogni appello & da sapere a memoria\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\textbf{Strategia in cinque righe.}
+\begin{enumerate}[nosep]
+\item Parti dai punti sicuri: generazione di v.a.\ (cap.~\ref{cap:gen}) e protezione (cap.~\ref{cap:prot}) sono procedurali.
+\item Sulle catene di Markov: stato $\to$ disegno $\to$ tagli $\to$ normalizza $\to$ Little con il traffico \emph{accettato}.
+\item Scrivi sempre la formula letterale prima dei numeri, poi sostituisci; controlla l'unità di misura (s o ms, pkt/s o kbit/s).
+\item Verifica con un controllo incrociato (due vie per $W$, $\la=\mu(1-p_0)$, $A_{1:1}=1-(1-A)^2$\dots).
+\item Teoria: scrivi enunciato, ipotesi e idea della dimostrazione; Little e Burke escono quasi sempre.
+\end{enumerate}
+
+\textbf{Convenzioni.} Le formule sono quelle delle slide del prof.\ Martignon; $\lambda$ è un \emph{tasso} (media $1/\lambda$) tranne dove indicato. Il simbolo \mio\ indica un \textbf{mio completamento} non presente nelle slide o nelle soluzioni ufficiali. Tutti i numeri sono stati ricalcolati con uno script indipendente. Le incongruenze trovate nelle fonti sono elencate nell'appendice sugli errata.

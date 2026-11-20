@@ -1,0 +1,361 @@
+\chapter{Generazione di variabili casuali}\label{cap4-top}\label{cap:gen}
+
+\begin{nota}[Come si riconosce]
+Testo del tipo \emph{\guillemotleft{}Si disponga di un generatore $U$ uniforme in $[0,1]$. Si sintetizzi la v.a.\ $X$ con densità\dots\guillemotright{}} oppure \guillemotleft{}si generi una v.a.\ uniforme su $[-5,-4]\cup[-3,4]$\guillemotright{}. È l'\textbf{Es.~3 di quasi tutti i temi dal 2008} (e compare anche nel 2005--2007): 4--5 sotto-richieste brevi, ognuna si risolve in 3 righe se conosci il metodo. Sono punti \emph{regalati}: falli per primi e senza errori di segno.
+\end{nota}
+
+%==========================================================
+\section{Teoria minima}
+
+\subsection{Il metodo del percentile (trasformata inversa)}
+\begin{formula}[Teorema]
+Se $U\sim\mathcal U(0,1)$ e $F$ è una CDF continua e strettamente crescente sul supporto, allora
+\[
+X=F^{-1}(U)\quad\text{ha CDF }F,\qquad\text{perché}\quad \Pr\{X\le t\}=\Pr\{U\le F(t)\}=F(t).
+\]
+\end{formula}
+\begin{procedura}[Ricetta in 4 passi]
+\begin{enumerate}[leftmargin=*]
+\item Controlla che l'area della densità sia 1 (lo fai sempre: ti dice se hai letto bene il supporto).
+\item Calcola la CDF: $F(x)=\int_{\text{inizio}}^{x}f(y)\,dy$ \textbf{con estremo inferiore giusto} (l'inizio del supporto, non $0$ per abitudine).
+\item Poni $U=F(X)$ e risolvi in $X$.
+\item Se compare un'equazione di 2° grado (o una radice pari) scegli la radice che cade \textbf{nel supporto}.
+\end{enumerate}
+\end{procedura}
+\begin{nota}[$U$ oppure $1-U$?]
+$1-U$ è uniforme quanto $U$: \emph{puoi sempre scrivere $U$ al posto di $1-U$} e risparmiare una sottrazione ($-\ln(1-U)\equiv-\ln U$, $\frac1{1-U}\equiv\frac1U$). Se $F$ è decrescente in $U$ la trasformazione diventa semplicemente un'altra v.a.\ con la stessa legge: il professore lo dichiara esplicitamente nelle soluzioni.
+\end{nota}
+
+\subsection{Casi elementari}
+\begin{formula}[Uniforme, discreta]
+\begin{align*}
+\text{Uniforme in }[a,b]:&\quad X=a+(b-a)U\qquad(\text{controllo: }U=0\to a,\ U=1\to b)\\[2pt]
+\text{Discreta, }p_k=\Pr\{X=a_k\}:&\quad X=a_k\ \text{ se }\ c_{k-1}<U\le c_k,\quad c_k=p_1+\dots+p_k,\ c_0=0
+\end{align*}
+\end{formula}
+Per la discreta il \guillemotleft{}codice\guillemotright{} è un \texttt{if/else} (o un \texttt{while}) di confronti con le probabilità \emph{cumulate}; per due soli valori basta un confronto: \texttt{if U<=0.2 then X=1 else X=2}.
+
+\subsection{Densità a pezzi e miste (con impulsi)}\label{cap4-pezzi}
+Una distribuzione \emph{mista} ha tratti continui (rettangoli, rampe) \textbf{e} masse puntiformi (delta di Dirac). Il metodo è unico:
+
+\begin{procedura}[{Dividi $[0,1]$ per masse, poi scala e trasla}]
+\begin{enumerate}[leftmargin=*]
+\item Elenca i \emph{pezzi}: per ogni tratto continuo la \textbf{massa} $p_i=\int f=\text{altezza}\times\text{base}$; per ogni delta la sua \textbf{massa} $p_i$. Verifica $\sum_ip_i=1$.
+\item Costruisci le cumulate $c_0=0,\ c_i=c_{i-1}+p_i$: ogni pezzo ottiene l'intervallo di $U$ lungo $p_i$.
+\item Se $U\in(c_{i-1},c_i]$:
+\begin{itemize}[nosep]
+\item delta in $x_i$: $X=x_i$ (costante);
+\item tratto \textbf{uniforme} su $[a_i,b_i]$: \quad $X=a_i+(U-c_{i-1})\dfrac{b_i-a_i}{p_i}$;
+\item tratto non uniforme: inverti la CDF \emph{locale} (§ precedente) con $\dfrac{U-c_{i-1}}{p_i}$ al posto di $U$.
+\end{itemize}
+\end{enumerate}
+\end{procedura}
+\begin{formula}[Scorciatoia: uniforme su un'unione di intervalli]
+Densità costante su $I_1\cup I_2\cup\dots$ di lunghezze $\ell_1,\ell_2,\dots$ ($L=\sum\ell_i$): il pezzo $i$ ha massa $\ell_i/L$ e
+\[
+X=L\,U+s_i,\qquad s_i=a_i-(\ell_1+\dots+\ell_{i-1})\quad(a_i=\text{inizio dell'intervallo }I_i),
+\]
+\ie \emph{\guillemotleft{}moltiplica $U$ per la lunghezza totale e trasla\guillemotright{}}. Esempio $[-5,-4]\cup[-3,4]$: $L=8$; $U\le\tfrac18\Rightarrow X=8U-5$; $U>\tfrac18\Rightarrow X=8U-3-1=8U-4$.
+\end{formula}
+
+\begin{formula}[Probabilità di un intervallo]
+$\Pr\{X\in I\}=$ (area della densità continua su $I$) $+$ (somma delle masse delle delta contenute in $I$).
+\end{formula}
+\begin{attenzione}[Delta sul bordo]
+Se una delta cade \emph{esattamente} su un estremo ($\Pr\{X\ge x_0\}$ con delta in $x_0$) va contata; per $\Pr\{X>x_0\}$ no. Leggi il simbolo ($\ge$ o $>$).
+\end{attenzione}
+
+%==========================================================
+\section{Schema decisionale}
+
+\begin{center}
+\small
+\begin{tikzpicture}[
+  q/.style={draw,rounded corners=2pt,fill=cGrigio,align=center,text width=4.1cm,inner sep=3pt},
+  r/.style={draw,thick,rounded corners=2pt,fill=white,draw=cBlu,align=center,text width=4.6cm,inner sep=3pt},
+  yn/.style={font=\scriptsize,inner sep=1pt}, node distance=0.55cm and 1.1cm]
+\node[q] (a) {Solo \textbf{valori discreti}?};
+\node[r,right=of a] (ra) {Confronta $U$ con le \textbf{probabilità cumulate}};
+\node[q,below=of a] (b) {Uniforme su uno o più intervalli?};
+\node[r,right=of b] (rb) {$a+(b-a)U$;\ se più intervalli: $LU+s_i$};
+\node[q,below=of b] (c) {Densità \textbf{a tratti/mista} (anche con delta)?};
+\node[r,right=of c] (rc) {Procedura per pezzi: \textbf{masse $\to$ cumulate $\to$ scala e trasla}};
+\node[q,below=of c] (d) {Un solo tratto continuo, $F$ invertibile?};
+\node[r,right=of d] (rd) {\textbf{Percentile}: $U=F(X)$, risolvi in $X$};
+\node[q,below=of d] (e) {Legge nota (Erlang, iperesp., geometrica, Poisson\dots)?};
+\node[r,right=of e] (re) {Ricetta dedicata (§\ref{cap4-classiche})};
+\node[r,below=of e] (f) {\textbf{Rigetto} (Von Neumann): $f\le c\,g$, accetta con prob.\ $f/(cg)$};
+\foreach \x/\y in {a/ra,b/rb,c/rc,d/rd,e/re}{\draw[-{Stealth},thick] (\x) -- node[above,yn]{sì} (\y);}
+\foreach \x/\y in {a/b,b/c,c/d,d/e,e/f}{\draw[-{Stealth},thick] (\x) -- node[right,yn]{no} (\y);}
+\end{tikzpicture}
+\end{center}
+
+%==========================================================
+\section{Tabella CDF $\to$ inversa}\label{cap4-tab}
+
+\begin{formula}[Tutte le densità viste nei temi]
+\centering\small
+\renewcommand{\arraystretch}{2.1}
+\begin{tabular}{llll}
+\toprule
+$f(x)$ & supporto & $F(x)$ & $X=F^{-1}(U)$\\
+\midrule
+$\lambda e^{-\lambda x}$ & $x\ge0$ & $1-e^{-\lambda x}$ & $-\tfrac1\lambda\ln U$\\
+$e^{-x}$ & $x\ge0$ & $1-e^{-x}$ & $-\ln U$\\
+$\dfrac1{x^2}$ & $x>1$ & $1-\dfrac1x$ & $\dfrac1U$\ (o $\tfrac1{1-U}$)\\
+$\dfrac1{x^2}$ & $x\le-1$ & $-\dfrac1x$ & $-\dfrac1U$\\
+$\dfrac1{x^2}$ & $\tfrac12\le x\le1$ & $2-\dfrac1x$ & $\dfrac1{2-U}$\\
+$\dfrac2x$ & $1\le x\le\sqrt e$ & $2\ln x$ & $e^{U/2}$\\
+$x+1$ & $-1\le x\le\sqrt2-1$ & $\dfrac{(x+1)^2}{2}$ & $-1+\sqrt{2U}$\\
+$x+1$ & $0\le x\le\sqrt3-1$ & $\dfrac{x^2}{2}+x$ & $-1+\sqrt{1+2U}$\\
+$\dfrac{x+1}{2}$ & $-1\le x\le1$ & $\dfrac{(x+1)^2}{4}$ & $-1+2\sqrt U$\\
+$2(x+1)$ & $-1\le x\le0$ & $(x+1)^2$ & $-1+\sqrt U$\\
+$(x+1)^2$ & $-1\le x\le\sqrt[3]3-1$ & $\dfrac{(x+1)^3}{3}$ & $-1+\sqrt[3]{3U}$\\
+$x^2$ & $0\le x\le\sqrt[3]3$ & $\dfrac{x^3}{3}$ & $\sqrt[3]{3U}$\\
+$4x^3$ & $0\le x\le1$ & $x^4$ & $\sqrt[4]U$\\
+\bottomrule
+\end{tabular}
+\end{formula}
+Il supporto con radicali ($\sqrt2-1$, $\sqrt3-1$, $\sqrt[3]3$, $\sqrt e$) è scelto apposta perché $F(\text{estremo})=1$: usalo come \textbf{verifica} di aver impostato giusto la CDF.
+
+%==========================================================
+\section{Distribuzioni classiche}\label{cap4-classiche}
+
+\subsection{Esponenziale}
+\begin{formula}[Esponenziale]
+\[
+\text{media }m\ (\text{tasso }\lambda=1/m):\qquad X=-m\ln U=-\tfrac1\lambda\ln U .
+\]
+\end{formula}
+\begin{attenzione}[Media o tasso?]
+Nelle slide di simulazione la lettera $\lambda$ indica la \textbf{media}, nelle slide sulle code il \textbf{tasso}. Controlla sempre la frase: \guillemotleft{}esponenziale con media 5\guillemotright{} $\Rightarrow-5\ln U$.
+\end{attenzione}
+
+\subsection{Geometrica}
+\begin{formula}[Geometrica]
+$\Pr\{X=k\}=p(1-p)^{k-1}$, $k=1,2,\dots$ (media $1/p$):
+\[
+X=\Big\lfloor\frac{\ln U}{\ln(1-p)}\Big\rfloor+1 .
+\]
+Con supporto $\{0,1,2,\dots\}$ ($\Pr\{X=k\}=p(1-p)^k$, media $(1-p)/p$) si toglie il $+1$.
+\end{formula}
+\begin{attenzione}[Il $+1$]
+Il foglio d'esercizi calcola $\lfloor\ln U/\ln(1-p)\rfloor$ per \guillemotleft{}geometrica di media 8\guillemotright{} ($p=1/8$): quella v.a.\ parte da $0$ ed ha media $7$. Per supporto $\{1,2,\dots\}$ e media 8 serve il $+1$. Leggi la convenzione nel testo.
+\end{attenzione}
+
+\subsection{Poisson}
+\begin{formula}[Ricerca sequenziale nella CDF]
+$\Pr\{X=k\}=\dfrac{a^k}{k!}e^{-a}$.\quad
+$k\leftarrow0,\ A\leftarrow e^{-a},\ P\leftarrow A$; \ estrai $U$; \ \textbf{while} $U>P$: $k\leftarrow k+1$, $A\leftarrow A\cdot a/k$, $P\leftarrow P+A$; \ restituisci $k$.
+\end{formula}
+
+\subsection{Erlang, iperesponenziale, composizione}
+\begin{formula}[Somme e miscele di esponenziali]
+\textbf{Erlang-$k$} (media $1/\mu$; $k$ uniformi indipendenti):
+\[X=-\frac{1}{k\mu}\sum_{j=1}^{k}\ln U_j=-\frac1{k\mu}\ln\prod_{j=1}^kU_j\]
+\textbf{Iperesponenziale} $f=\sum_i\alpha_i\lambda_ie^{-\lambda_it}$: scegli $i$ con prob.\ $\alpha_i$ (discreta), poi $X=-\tfrac1{\lambda_i}\ln U'$.\\
+\textbf{Binomiale} $(n,p)$: somma di $n$ Bernoulli ($1$ se $U\le p$, $0$ altrimenti).
+\end{formula}
+Quest'ultima è la \emph{composizione}: ogni distribuzione che è una miscela $f=\sum\alpha_if_i$ si genera scegliendo prima la componente (discreta) e poi campionando $f_i$. \mio
+
+\subsection{Gaussiana e Rayleigh}
+\begin{formula}[Gaussiana]
+$\mathcal N(\mu,\sigma^2)$: $Z=\sigma X+\mu$ con $X\sim\mathcal N(0,1)$. Per $X$: somma di 12 uniformi $X=\sum_{i=1}^{12}U_i-6$ (media 0, varianza 1, per TCL), oppure \textbf{Box--Muller}:
+\[
+X=\sqrt{-2\ln U_1}\,\cos(2\pi U_2),\qquad Y=\sqrt{-2\ln U_1}\,\sin(2\pi U_2)\quad(\text{indipendenti}).
+\]
+Rayleigh $f=xe^{-x^2/2}$: $F=1-e^{-x^2/2}$, $X=\sqrt{-2\ln U}$ (è il modulo di Box--Muller).
+\end{formula}
+
+\subsection{Laplace ed esponenziale troncata}
+\begin{formula}[Altre densità dei fogli]
+\textbf{Laplace} $\frac1{2\lambda}e^{-|x|/\lambda}$ (una sola $U$)\mio:
+\[X=\begin{cases}\lambda\ln(2U)&U<\tfrac12\\-\lambda\ln\big(2(1-U)\big)&U\ge\tfrac12\end{cases}\]
+Versione del foglio con due uniformi: $U_1<\tfrac12\Rightarrow X=-\lambda\ln U_2$, altrimenti $X=\lambda\ln U_2$.\\[3pt]
+\textbf{Esponenziale troncata} su $[0,a]$:
+\[F(x)=\frac{1-e^{-x/\lambda}}{1-e^{-a/\lambda}},\qquad X=-\lambda\ln\!\big(1-U(1-e^{-a/\lambda})\big)\]
+\end{formula}
+Per la troncata esiste anche la via del rigetto: estrai un'esponenziale e \emph{scartala} se supera $a$.
+
+\subsection{Rigetto (Von Neumann)}\mio
+Quando $F^{-1}$ non è disponibile in forma chiusa.
+\begin{procedura}[Acceptance--rejection]
+\begin{enumerate}[leftmargin=*]
+\item Trova una densità $g$ facile da campionare e una costante $c$ con $f(x)\le c\,g(x)$ ovunque.
+\item Estrai $Y\sim g$ e $U\sim\mathcal U(0,1)$ indipendenti.
+\item Se $U\le\dfrac{f(Y)}{c\,g(Y)}$ restituisci $X=Y$, altrimenti torna al punto 2.
+\end{enumerate}
+\end{procedura}
+\begin{itemize}
+\item Probabilità di accettazione $=1/c$; il numero medio di tentativi è $c$ (da qui l'efficienza: scegli $c$ il più piccolo possibile).
+\item Caso tipico, $f$ limitata da $M$ su $[a,b]$ con $g$ uniforme: $X=a+(b-a)U_1$, accetta se $M\,U_2\le f(X)$; tentativi medi $M(b-a)$.
+\item Esempio: $f(x)=6x(1-x)$ su $[0,1]$, $M=\tfrac32$ $\Rightarrow$ si accetta 2 volte su 3 e $\E[X]=\tfrac12$.
+\end{itemize}
+Domanda di teoria ricorrente (2010): enuncia il procedimento sopra, motiva che l'uscita ha densità $f$ ($\Pr\{Y\le x,\text{ accettato}\}=\frac1c F(x)$) e commenta l'efficienza.
+
+\subsection{Generatore di partenza non standard}
+Se il testo fornisce $Y$ uniforme in $[-1,1]$ (compitino 19/6/2003), \textbf{prima} ricava $U=\tfrac{Y+1}{2}\in[0,1]$ e poi applica le ricette di questo capitolo. In generale, per generatore uniforme su $[\alpha,\beta]$: $U=\dfrac{Y-\alpha}{\beta-\alpha}$.
+
+%==========================================================
+\section{Esercizi svolti dai temi}\label{cap4-esercizi}
+
+In ogni esercizio: (i) controllo delle aree, (ii) generatore come \texttt{if/else} su $U$. Tutti i generatori sono stati verificati numericamente.\mio
+
+\begin{esempio}{Es.~3, 27/05/2020}
+\textbf{Testo.} $f(x)$: impulso di peso $\tfrac14$ in $x=-1$ più rettangolo di altezza $1$ su $[1,\tfrac74]$ (area $\tfrac34$). \textbf{(1a)} $\Pr\{X\ge\tfrac32\}$; \textbf{(1b)} sintetizzare $X$; \textbf{(2a)} uniforme su $[-4,-2]\cup[2,6]$; \textbf{(2b)} $f_Y(x)=2(x+1)$ su $[-1,0]$.
+
+\textbf{(1a)} $\Pr\{X\ge\tfrac32\}=(\tfrac74-\tfrac32)\cdot1=\tfrac14$.\\
+\textbf{(1b)} Masse $\tfrac14+\tfrac34=1$ \checkmark:
+\[
+X=\begin{cases}-1&0\le U\le\tfrac14\\ U+\tfrac34&\tfrac14<U\le1\end{cases}\qquad(\text{il secondo tratto cade in }(1,\tfrac74]).
+\]
+\textbf{(2a)} $L=2+4=6$, $s_1=-4$, $s_2=2-2=0$:\quad $X=6U-4$ se $U\le\tfrac13$, \ $X=6U$ se $U>\tfrac13$.\\
+\textbf{(2b)} $F(x)=\int_{-1}^x2(y+1)dy=(x+1)^2$ (area totale $F(0)=1$ \checkmark) $\Rightarrow U=(X+1)^2$, \ $X=-1+\sqrt U$.
+\end{esempio}
+
+\begin{esempio}{Es.~3, 23/05/2025}
+\textbf{Testo.} Densità a gradini: $\tfrac14$ su $[-1,0]$, $\tfrac12$ su $[0,1]$, $\tfrac14$ su $[1,2]$. \textbf{(1a)} $\Pr\{-\tfrac12\le X\le\tfrac12\}$; \textbf{(1b)} $X$; \textbf{(2a)} uniforme su $[-5,-4]\cup[-3,4]$; \textbf{(2b)} $f_Y=\dfrac1{x^2}$ su $[\tfrac12,1]$.
+
+Masse: $\tfrac14,\tfrac12,\tfrac14$ (somma 1 \checkmark).\\
+\textbf{(1a)} $\tfrac14\cdot\tfrac12+\tfrac12\cdot\tfrac12=\tfrac18+\tfrac14=\tfrac38$.\\
+\textbf{(1b)}
+\[
+X=\begin{cases}4U-1&U\le\tfrac14\\ 2U-\tfrac12&\tfrac14<U\le\tfrac34\\ 4U-2&U>\tfrac34\end{cases}
+\qquad(\text{es.: }U=\tfrac34\Rightarrow 1;\ U=1\Rightarrow2).
+\]
+\textbf{(2a)} $\ell_1=1,\ \ell_2=7,\ L=8$: \ $X=8U-5$ se $U\le\tfrac18$, \ $X=8U-4$ se $U>\tfrac18$.\\
+\textbf{(2b)} $F(x)=\int_{1/2}^x\!y^{-2}dy=2-\tfrac1x$ ($F(1)=1$ \checkmark) $\Rightarrow X=\dfrac1{2-U}$.
+\end{esempio}
+
+\begin{esempio}{Es.~2, 14/06/2005 (4 punti elementari)}
+(1) Uniforme in $[-1,0]$: $Y=-U$. \quad (2) Uniforme in $[-2,3]$: $Y=-2+5U$ (controllo: $U=0\to-2$, $U=1\to3$).\\
+(3) $f=e^{-x}$, $x\ge0$: $F=1-e^{-x}\Rightarrow Y=-\ln(1-U)\equiv-\ln U$ (il professore usa $U$ al posto di $1-U$ per risparmiare la sottrazione).\\
+(4) $\Pr\{Y=1\}=0.2$, $\Pr\{Y=2\}=0.8$: \ \texttt{if} $U\le0.2$ \texttt{then} $Y=1$ \texttt{else} $Y=2$.
+\end{esempio}
+
+\begin{esempio}{Es.~2, 29/06/2005}
+(1) $X=\lceil2U\rceil+3$: se $U\le\tfrac12$, $\lceil2U\rceil=1\Rightarrow X=4$; se $U>\tfrac12$, $X=5$. Quindi $\Pr\{X=4\}=\Pr\{X=5\}=\tfrac12$.\\
+(2a) Uniforme su $[-5,0]\cup[2,7]$: $L=10$, $s_1=-5$, $s_2=2-5=-3$:\ $X=10U-5$ se $U\le\tfrac12$; $X=10U-3$ se $U>\tfrac12$.\\
+(2b) $f=1/x^2$ per $x\le-1$ (area $\int_{-\infty}^{-1}x^{-2}=1$ \checkmark): $F(x)=-\tfrac1x\Rightarrow X=-\dfrac1U$.
+\end{esempio}
+
+\begin{esempio}{Es.~3, 31/05/2006 (soluzione ricalcolata\mio)}
+(a) $f=x+1$ su $[-1,\sqrt2-1]$: $F=\tfrac{(x+1)^2}{2}$ ($F(\sqrt2-1)=1$ \checkmark) $\Rightarrow X=-1+\sqrt{2U}$.\\
+(b) Uniforme su $[-3,1]\cup[2,4]$: $\ell=4,2$, $L=6$, $s_2=2-4=-2$:\ $X=6U-3$ se $U\le\tfrac23$; $X=6U-2$ se $U>\tfrac23$.\\
+(c) Esponenziale \guillemotleft{}con media $-\mu$\guillemotright{}: il segno è un refuso, la media è $\mu>0$ $\Rightarrow X=-\mu\ln U$.
+\end{esempio}
+
+\begin{esempio}{Es.~2, 27/06/2006}
+(1) Discreta $(0.5,0.25,0.25)$ su $\{1,2,3\}$: cumulate $0.5,\ 0.75,\ 1$: \ $X=1$ se $U\le0.5$; $X=2$ se $0.5<U\le0.75$; $X=3$ se $U>0.75$.\\
+(2) $f=(x+1)^2$ su $[-1,\sqrt[3]3-1]$: $F=\tfrac{(x+1)^3}{3}\Rightarrow X=-1+\sqrt[3]{3U}$.\\
+(3) \emph{Mista}: rettangolo $\tfrac16$ su $[2,5]$ (massa $\tfrac12$), delta $\tfrac14$ in $x=3$ e delta $\tfrac14$ in $x=4$ (somma $\tfrac12+\tfrac14+\tfrac14=1$ \checkmark):
+\[
+X=\begin{cases}6U+2&U\le\tfrac12\\ 3&\tfrac12<U\le\tfrac34\\ 4&U>\tfrac34\end{cases}
+\]
+(le delta cadono \emph{dentro} il supporto del rettangolo: non è un errore, i pezzi si sommano).
+\end{esempio}
+
+\begin{esempio}{Es.~2, 31/05/2007}
+(1) Uniforme su $[-3,-1]\cup[2,5]$: $\ell=2,3$, $L=5$, $s_2=2-2=0$:\ $X=5U-3$ se $U<\tfrac25$; $X=5U$ se $U\ge\tfrac25$.\\
+(2) $f=x+1$ su $[0,\sqrt3-1]$: $F=\tfrac{x^2}2+x$ ($F(\sqrt3-1)=2-\sqrt3+\sqrt3-1=1$ \checkmark). $x^2+2x-2U=0\Rightarrow X=-1+\sqrt{1+2U}$ (si scarta la radice negativa).\\
+(3) Delta $\tfrac12$ in $x=-2$, rettangolo $\tfrac1{12}$ su $[1,4]$ (massa $\tfrac14$), delta $\tfrac14$ in $x=6$:
+\[
+X=\begin{cases}-2&U<\tfrac12\\ 12U-5&\tfrac12\le U<\tfrac34\\ 6&U\ge\tfrac34\end{cases}\qquad
+(\text{da }1+(U-\tfrac12)\tfrac{3}{1/4}=12U-5).
+\]
+\end{esempio}
+
+\begin{esempio}{Es.~2, 28/05/2008}
+(1) Uniforme su $[-3,2]\cup[5,15]$: $\ell=5,10$, $L=15$, $s_2=5-5=0$:\ $X=15U-3$ se $U\le\tfrac13$; $X=15U$ se $U>\tfrac13$.\\
+(2) $f=1/x^2$ per $x>1$: $F=1-\tfrac1x\Rightarrow X=\dfrac1{1-U}\equiv\dfrac1U$.\\
+(3) Densità $\tfrac14$ su $[1,3]$ (massa $\tfrac12$), $\tfrac18$ su $[3,5]$ (massa $\tfrac14$), delta $\tfrac14$ in $x=7$:
+\[
+X=\begin{cases}4U+1&U\le\tfrac12\\ 8U-1&\tfrac12<U\le\tfrac34\\ 7&U>\tfrac34\end{cases}\qquad
+(\text{secondo tratto: }3+(U-\tfrac12)\tfrac{2}{1/4}=8U-1).
+\]
+\end{esempio}
+
+\begin{esempio}{Es.~3, 28/05/2009}
+Densità: $\tfrac14$ su $[0,1]$ (massa $\tfrac14$) e delta $\tfrac34$ in $x=2$.\\
+(1a) $\Pr\{X\ge0.5\}=\tfrac12\cdot\tfrac14+\tfrac34=\tfrac78$ (la delta in $x=2$ è inclusa).\\
+(1b) $X=4U$ se $U\le\tfrac14$, \ $X=2$ se $U>\tfrac14$.\\
+(2a) Uniforme su $[-3,-2]\cup[0,5]$: $\ell=1,5$, $L=6$, $s_2=0-1=-1$:\ $X=6U-3$ se $U\le\tfrac16$; $X=6U-1$ se $U>\tfrac16$.\\
+(2b) $f=2/x$ su $[1,\sqrt e]$: $F=2\ln x$ ($F(\sqrt e)=1$ \checkmark) $\Rightarrow X=e^{U/2}$.
+\end{esempio}
+
+\begin{esempio}{Es.~3, 15/06/2010}
+Delta $\tfrac35$ in $x=-2$ e densità $0.2$ su $[0,2]$ (massa $0.4$): somma $1$ \checkmark.\\
+(1a) $\Pr\{X\le0.5\}=\tfrac35+0.2\cdot0.5=\tfrac7{10}$.\quad (1b) $X=-2$ se $U\le\tfrac35$; \ $X=5U-3$ se $U>\tfrac35$ (da $0+(U-\tfrac35)\tfrac{2}{0.4}$).\\
+(2a) Uniforme su $[-5,-4]\cup[2,5]$: $\ell=1,3$, $L=4$, $s_2=2-1=1$:\ $X=4U-5$ se $U\le\tfrac14$; $X=4U+1$ se $U>\tfrac14$.\\
+(2b) $f=\tfrac{x+1}2$ su $[-1,1]$: $F=\tfrac{(x+1)^2}{4}\Rightarrow X=-1+2\sqrt U$.
+\end{esempio}
+
+\subsection*{Fogli \guillemotleft{}Generazione di variabili casuali\guillemotright{}}
+
+\begin{esempio}{Foglio 1}
+(a) Uniforme in $[-1,10]$: $X=-1+11U$.\\
+(b) Uniforme su $[-3,-1]\cup[1,3]$: $X=-3+4U$ se $U<\tfrac12$; $X=4U-1$ se $U\ge\tfrac12$ (equivale a $1+4(U-\tfrac12)$).\\
+(c) $f=x^2$ su $[0,\sqrt[3]3]$: $F=\tfrac{x^3}3$, $X=\sqrt[3]{3U}$. \emph{Refuso nel foglio}: l'integrale è scritto con estremo inferiore $-1$; deve partire da $0$ (inizio del supporto).\\
+(d) Laplace $\tfrac1{2\lambda}e^{-|x|/\lambda}$: estrai $U_1,U_2$; se $U_1<\tfrac12$ allora $X=-\lambda\ln U_2$ (ramo positivo), altrimenti $X=\lambda\ln U_2$ (ramo negativo). Con una sola $U$: formula di §\ref{cap4-classiche}.\mio
+\end{esempio}
+
+\begin{esempio}{Foglio 2}
+(a) $X=-5+10U$ (uniforme su $[-5,5]$). \quad (b) come 1(c).\\
+(c) \textbf{Geometrica di media 8}: $p=\tfrac18$. Il foglio scrive $X=\lfloor\ln U/\ln(1-p)\rfloor$, che ha supporto $\{0,1,\dots\}$ e media $7$; per $\{1,2,\dots\}$ e media $8$: $X=\lfloor\ln U/\ln(1-p)\rfloor+1$.\\
+(d) Esponenziale troncata su $[0,a]$: percentile $X=-\lambda\ln\big(1-U(1-e^{-a/\lambda})\big)$, oppure rigetto (scarta se $>a$).
+\end{esempio}
+
+\begin{esempio}{Foglio 3 (esame 19/06/2003): generatore $Y\sim\mathcal U[-1,1]$}
+Si parte da $U=\tfrac{Y+1}2\in[0,1]$.\\
+(a) Uniforme in $[-2,3]$: $X=5U-2$.\quad (b) $f=\tfrac12$ su $[0,1]$ e su $[2,3]$: $X=2U$ se $U<\tfrac12$, $X=2U+1$ se $U\ge\tfrac12$.\\
+(c) $f=4x^3$ su $[0,1]$: $F=x^4$, $X=\sqrt[4]U$.\quad (d) Esponenziale di media 5: $X=-5\ln U$. (Il testo la chiama \guillemotleft{}discreta\guillemotright{}, ma la formula è quella continua: seguila.)
+\end{esempio}
+
+\begin{esempio}{Foglio 4 (esercizio completo con distribuzione mista)}
+\textbf{Testo.} $X=-3$ con prob.\ $\tfrac16$, $X=5$ con prob.\ $\tfrac12$; con prob.\ $\tfrac13$ uniforme su $[-5,\tfrac12]\cup[\tfrac32,4]$.
+
+\textbf{Aree.} Lunghezza totale della parte uniforme $=\tfrac{11}{2}+\tfrac52=8$; densità $\eta=\dfrac{1/3}{8}=\dfrac1{24}$. Masse: $\tfrac16+\tfrac12+\tfrac13=1$ \checkmark.
+
+\textbf{CDF} (si scrive tratto per tratto, segnando salti e plateau):
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+$x$ & $F(x)$ & note\\
+\midrule
+$[-5,-3)$ & $\tfrac{x+5}{24}$ & in $-3^-$: $\tfrac1{12}$\\
+in $-3$ & salto $+\tfrac16$ & arriva a $\tfrac14$\\
+$(-3,\tfrac12]$ & $\tfrac14+\tfrac{x+3}{24}$ & in $\tfrac12$: $\tfrac{19}{48}$\\
+$[\tfrac12,\tfrac32)$ & $\tfrac{19}{48}$ & \textbf{plateau} (buco nel supporto)\\
+$[\tfrac32,4]$ & $\tfrac{19}{48}+\tfrac{x-3/2}{24}$ & in $4$: $\tfrac12$\\
+in $5$ & salto $+\tfrac12$ & arriva a $1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Inversione} (i tratti continui si invertono, i salti diventano costanti, i plateau diventano salti in $x$):
+\[
+X=\begin{cases}
+24U-5 & 0<U\le\tfrac1{12}\\
+-3 & \tfrac1{12}<U\le\tfrac3{12}\\
+24U-9 & \tfrac3{12}<U\le\tfrac{19}{48}\\
+24U-8 & \tfrac{19}{48}<U\le\tfrac12\\
+5 & \tfrac12<U\le1
+\end{cases}
+\]
+\textbf{Controllo agli estremi:} $U=\tfrac1{12}\to-3$; $U=\tfrac14\to-3$ (continuità col salto); $U=\tfrac{19}{48}\to\tfrac12$ (con $24U-9$) e $\tfrac32$ (con $24U-8$): è il salto sul buco $(\tfrac12,\tfrac32)$; $U=\tfrac12\to4$.
+\end{esempio}
+
+%==========================================================
+\section{Errori frequenti}
+\begin{attenzione}[Elenco di trappole]
+\begin{enumerate}[leftmargin=*]
+\item Non verificare che l'area valga 1: se non torna hai letto male supporto o altezza.
+\item Estremo inferiore sbagliato nell'integrale di $F$ (usare $0$ invece dell'inizio del supporto).
+\item Scegliere la radice fuori dal supporto in un'equazione di 2° grado.
+\item Mettere il $+$ al posto del $-$ (o viceversa) nel traslare: controlla \emph{sempre} che $U=c_{i-1}$ dia l'estremo sinistro e $U=c_i$ l'estremo destro del tratto.
+\item Dimenticare le delta nel calcolo di $\Pr\{X\in I\}$, o contarle quando cadono fuori da $I$.
+\item Media/tasso nell'esponenziale; supporto della geometrica ($+1$).
+\item Ordinare i pezzi in modo incoerente: l'ordine delle cumulate è libero, ma deve essere lo stesso nelle tre righe del \texttt{if/else}.
+\item Dimenticare che in presenza di un buco nel supporto (plateau di $F$) la mappa $U\mapsto X$ salta: non è un errore.
+\item Scrivere il generatore in forma \guillemotleft{}continua\guillemotright{} per una variabile discreta (e viceversa): se $X$ è discreta, il risultato deve essere uno dei valori ammessi.
+\end{enumerate}
+\end{attenzione}

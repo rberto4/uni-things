@@ -1,0 +1,163 @@
+\chapter{Controllo di flusso e congestione}\label{cap7-flusso}\label{cap:flusso}
+
+\begin{nota}[Come si riconosce]
+Tre situazioni: (i) \textbf{token bucket} (controllore di flusso con permessi, Es.~1 nel 2005-11 e nel 2025): si risolve come una catena di Markov, vedi cap.~1 (\guillemotleft{}Token bucket / controllore di flusso\guillemotright{}); (ii) \textbf{finestra} $W$ e prodotto banda--ritardo; (iii) domande di teoria su \textbf{CQL} (Channel Queue Limit) e sulle curve traffico smaltito/offerto. Qui trovi i modelli delle slide e le formule da ricordare.
+\end{nota}
+
+%==========================================================
+\section{Perché serve il controllo di congestione}\label{cap7-perche}
+Senza controllo, oltre una certa soglia il traffico smaltito \emph{diminuisce} al crescere di quello offerto (buffer pieni, ritrasmissioni, deadlock). Il controllo serve a: evitare il degrado, evitare il deadlock, ripartire le risorse in modo equo.
+
+\begin{center}
+\begin{tikzpicture}[x=1.15cm,y=1.15cm]
+\draw[-{Stealth}] (0,0) -- (6.4,0) node[right,font=\small]{$S_0$ (offerto)};
+\draw[-{Stealth}] (0,0) -- (0,3.3) node[above,font=\small]{$S$ (smaltito)};
+\draw[dashed,gray] (0,0) -- (3,3) -- (6,3);
+\draw[thick,cBlu,smooth] plot coordinates {(0,0)(1,0.95)(2,1.8)(3,2.3)(4,2.45)(5,2.45)(6,2.45)};
+\draw[thick,cRosso,smooth] plot coordinates {(0,0)(1,0.95)(2,1.8)(3,2.15)(3.6,1.8)(4.5,1.1)(5.5,0.5)(6,0.3)};
+\draw[thick,cVerde,smooth] plot coordinates {(0,0)(1,0.9)(2,1.4)(3,1.6)(4,1.65)(5,1.65)(6,1.65)};
+\node[font=\scriptsize,gray,anchor=south east] at (2.8,3.05) {ideale};
+\node[font=\scriptsize,cBlu,anchor=west] at (6.05,2.45) {controllo ottimizzato};
+\node[font=\scriptsize,cVerde,anchor=west] at (6.05,1.65) {controllo troppo rigido};
+\node[font=\scriptsize,cRosso,anchor=west] at (6.05,0.3) {nessun controllo};
+\end{tikzpicture}
+\end{center}
+Curva \emph{non controllata}: dopo il massimo cade nella zona instabile. Un controllo rigido (partizione completa dei buffer) è stabile ma sotto-utilizza la rete; uno ben tarato si avvicina all'ideale. \mio\ (curve qualitative, come in slide 4--5 e 26.)
+
+\subsection{Tre livelli di controllo}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Livello & Strumento & Cosa limita\\
+\midrule
+Hop (nodo) & CQL, allocazione buffer & coda per canale in uscita\\
+Ingresso rete & \emph{Rate control}: token bucket & traffico ammesso\\
+End-to-end & Finestra, TCP & pacchetti in volo\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==========================================================
+\section{Token bucket}\label{cap7-tb}
+
+\subsection{Modello}
+I pacchetti attendono un \emph{permesso} per entrare in rete. Un permesso arriva ogni $1/r$ s in una coda permessi di capacità $W$ (se è piena, il permesso è \textbf{scartato}). Un pacchetto che trova un permesso lo consuma e passa subito.
+\begin{itemize}
+\item Regola l'ingresso ma \emph{non} garantisce né ritardo né perdite.
+\item $W$ piccolo: attese lunghe; $W=1$ si comporta come TDM / leaky bucket. $W$ grande: i burst entrano subito (rischio di congestione a valle).
+\item I temi (2005, 2025) usano permessi Poisson ($\mu$) e code finite: catena \emph{a tempo continuo}, vedi cap.~1. Le slide invece usano permessi \textbf{deterministici} e coda pacchetti infinita: catena \emph{embedded} (sotto).
+\end{itemize}
+
+\subsection{Modello embedded delle slide}
+Osservo il sistema ai soli \textbf{istanti di arrivo dei permessi} (ogni $1/r$ s). Pacchetti Poisson di tasso $\lambda$. Stato $i$:
+\begin{itemize}
+\item $i\le W$: $W-i$ permessi disponibili, nessun pacchetto in attesa (stato $0$ $=$ bucket pieno, $W$ permessi);
+\item $i=W+k$: $k$ pacchetti in attesa, nessun permesso.
+\end{itemize}
+In un intervallo arrivano $k$ pacchetti e poi un permesso: lo stato diventa $i'=\max(0,\,i+k-1)$, con
+\begin{formula}[Arrivi in un intervallo e stabilità]
+\[
+a_k=\frac{(\lambda/r)^k}{k!}\,e^{-\lambda/r},\qquad
+P_{ji}=a_{i-j+1}\ (i\ge j-1,\ j\ge1),\qquad
+P_{00}=a_0+a_1,\quad P_{0i}=a_{i+1}\ (i\ge1).
+\]
+Stabile se e solo se $\boxed{\lambda<r}$.
+\end{formula}
+
+\begin{formula}[Probabilità stazionarie]
+\begin{align*}
+p_0&=\frac{r-\lambda}{r\,a_0}\qquad(\text{un permesso è perso solo in stato 0 senza arrivi: }\lambda=r(1-p_0a_0))\\
+p_1&=\frac{1-a_0-a_1}{a_0}\,p_0,\qquad
+p_{i+1}=\frac{1}{a_0}\Big[(1-a_1)\,p_i-\sum_{j=0}^{i-1}a_{i-j+1}\,p_j\Big]\quad(i\ge1)\\
+p_2&=\frac{p_0}{a_0}\Big[\frac{(1-a_0-a_1)(1-a_1)}{a_0}-a_2\Big]
+\end{align*}
+\textbf{Attesa media per un permesso} (slide): $\displaystyle T=\sum_{j=W+1}^{\infty}\frac{1}{r}\,(j-W)\,p_j$.
+\end{formula}
+\begin{attenzione}[Indici e interpretazione]
+\begin{enumerate}[leftmargin=*,nosep]
+\item Lo stato 0 è \guillemotleft{}$W$ permessi\guillemotright{}, \emph{non} \guillemotleft{}sistema vuoto\guillemotright{}.
+\item La catena non dipende da $W$ (cambia solo l'etichetta): $W$ entra solo in $T$, dove contano i pacchetti in attesa $j-W$.
+\item Sulle slide $p_2$ è scritta con $1/a_2$: è un refuso, il fattore giusto è $1/a_0$ (si ricava dal bilancio dello stato 1: $p_1=a_2p_0+a_1p_1+a_0p_2$).\mio
+\item $T$ della slide usa lo stato osservato ai token: è la formula da riportare, ma non è il tempo medio \emph{esatto} per un pacchetto (per quello servirebbe Little con la lunghezza media di coda a tempo continuo).\mio
+\end{enumerate}
+\end{attenzione}
+
+\begin{esempio}{Esempio numerico\mio\ --- $\lambda=0.5$ pkt/s, $r=1$ permesso/s}
+Poisson con $\lambda/r=\tfrac12$: $a_0=e^{-1/2}=0.60653$, $a_1=0.30327$, $a_2=0.07582$. Stabile ($\lambda<r$).
+\begin{itemize}[nosep]
+\item $p_0=\dfrac{r-\lambda}{r\,a_0}=\dfrac{0.5}{0.60653}=0.82436$.
+\item $p_1=\dfrac{1-0.60653-0.30327}{0.60653}\cdot0.82436=0.12260$.
+\item $p_2=\dfrac{0.82436}{0.60653}\Big[\dfrac{0.09020\cdot0.69673}{0.60653}-0.07582\Big]=0.03779$; poi $p_3=0.01091$, $p_4=0.00311$\dots
+\end{itemize}
+Controllo (bilancio dello stato 0): $(a_0+a_1)p_0+a_0p_1=0.90980\cdot0.82436+0.60653\cdot0.12260=0.82436=p_0$ \checkmark.
+
+Attesa con \textbf{$W=1$}: $T=\sum_{j\ge2}(j-1)p_j=0.0744$ s. Con \textbf{$W=2$}: $T=\sum_{j\ge3}(j-2)p_j=0.0213$ s. Più permessi nel bucket $\Rightarrow$ meno attesa.
+\end{esempio}
+
+%==========================================================
+\section{Controllo a finestra}\label{cap7-finestra}
+La finestra $W$ limita i pacchetti inviati ma non ancora riscontrati. Con tempo di andata e ritorno $\mathrm{RTT}$, pacchetti di $L$ bit e canale di capacità $c$:
+\begin{formula}[Velocità effettiva e prodotto banda--ritardo]
+\[
+c_{\mathrm{eff}}=\min\Big\{c,\ \frac{W\cdot L}{\mathrm{RTT}}\Big\},\qquad
+\text{la finestra non limita se}\quad W\cdot L\ \ge\ c\cdot\mathrm{RTT}
+\]
+Finestra minima per saturare il canale: $W_{\min}=\Big\lceil\dfrac{c\cdot\mathrm{RTT}}{L}\Big\rceil$ pacchetti.
+\end{formula}
+Qui $\mathrm{RTT}=T_p+T_{\mathrm{ACK}}+2\tau$ (trasmissione, ACK, propagazione). Con la congestione l'$\mathrm{RTT}$ cresce (code), quindi $c_{\mathrm{eff}}$ scende: è per questo che la finestra è anche controllo di congestione. Per Little $N=\lambda T$: $W$ limita il numero medio di pacchetti in rete.
+
+\begin{esempio}{Esempio\mio\ --- $c=64$ kbit/s, $L=1000$ bit}
+\begin{itemize}[nosep]
+\item $W=1$, $\mathrm{RTT}=0.1$ s: $c_{\mathrm{eff}}=\min\{64,\ 1\cdot1000/0.1\}=10$ kbit/s (esempio delle slide).
+\item $\mathrm{RTT}=0.2$ s: $c\cdot\mathrm{RTT}=12\,800$ bit $=12.8$ pacchetti $\Rightarrow W_{\min}=13$.
+\item $W=5$: $c_{\mathrm{eff}}=5\cdot1000/0.2=25$ kbit/s (finestra limitante). $W=13$: $c_{\mathrm{eff}}=c$.
+\end{itemize}
+\end{esempio}
+
+%==========================================================
+\section{Channel Queue Limit (CQL)}\label{cap7-cql}
+Controllo \emph{per nodo}: limita la coda di ogni canale in uscita, così la memoria non si satura e si previene il deadlock diretto. Notazione: $B$ buffer totale, $N$ code di uscita, $n_i$ pacchetti nella coda $i$.
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+Schema & Vincoli\\
+\midrule
+Partizione completa & $0\le n_i\le B/N$. Modello: $N$ code M/M/1/$C$ indipendenti con $C=B/N$\\
+Partizione limitata (condivisa) & $0\le n_i\le b_M$ con $b_M>B/N$ e $\sum_in_i\le B$\\
+Con buffer minimo & $b_m<B/N$ riservato a ciascuna coda, $\sum_i\max(0,n_i-b_m)\le B-Nb_m$\\
+Limitata $+$ minimo & entrambe le condizioni\\
+\bottomrule
+\end{tabularx}
+\end{center}
+I parametri possono variare dinamicamente con il traffico di ciascuna coda. Per $N=2$ lo stato è la coppia $(n_1,n_2)$ su una griglia 2D; il caso limitato ha angoli tagliati da $n_1+n_2\le B$.
+
+\begin{attenzione}[Euristica per $b_M$: incongruenza nelle slide]
+La slide 26 riporta $b_M=\sqrt{B/N}$, ma $\sqrt{B/N}<B/N$ (es.\ $B=100$, $N=4$: $5<25$), che \emph{contraddice} il vincolo $b_M>B/N$ della partizione limitata. L'espressione coerente è $\boxed{b_M\simeq B/\sqrt N}$ (con $B=100$, $N=4$: $50>25$).\mio\ In caso di dubbio, scrivi questa e cita il vincolo $b_M>B/N$.
+\end{attenzione}
+Confronto qualitativo (curva $S$ vs $S_0$ della §\ref{cap7-perche}): senza CQL il traffico smaltito crolla ad alto carico; la partizione completa è stabile ma bassa; la partizione limitata ottimizzata è la migliore, e l'euristica è vicina all'ottimo.
+
+%==========================================================
+\section{Funzione potenza}
+Rimanda al cap.~2. Solo il promemoria: M/M/1, $P=\dfrac{\text{traffico smaltito}}{\text{ritardo}}=\lambda(\mu-\lambda)$, massimo per $\lambda^*=\mu/2$ ($\rho=\tfrac12$, $N=1$). Il traffico smaltito è $\lambda$, \textbf{non} $\mu$.
+
+%==========================================================
+\section{Cosa sapere per lo scritto}
+\begin{procedura}[Domande tipiche]
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Cos'è la congestione e perché il traffico smaltito può calare?} Buffer pieni, scarti e ritrasmissioni, deadlock; curva con zona instabile.
+\item \textbf{Token bucket}: schema, ruolo di $W$ e $r$ (burst consentito, tasso medio), $W=1\to$ leaky bucket; non garantisce ritardo.
+\item \textbf{CQL}: cosa limita, partizione completa/limitata/minimo, perché evita il deadlock diretto.
+\item \textbf{Finestra}: $c_{\mathrm{eff}}=\min\{c,WL/\mathrm{RTT}\}$ e prodotto banda--ritardo.
+\end{enumerate}
+\end{procedura}
+
+\begin{attenzione}[Errori frequenti]
+\begin{enumerate}[leftmargin=*,nosep]
+\item Token bucket dei temi: catena a 4 stati con $\lambda$ avanti e $\mu$ indietro, \textbf{non} il modello embedded.
+\item Embedded: stabilità $\lambda<r$ (non $\lambda<\mu$), e $p_0$ richiede coda pacchetti infinita.
+\item Lo stato 0 dell'embedded ha $W$ permessi.
+\item $W_{\min}$ si arrotonda \emph{per eccesso}; lavora in bit o in pacchetti, non mischiare.
+\item $b_M=B/\sqrt N$ (non $\sqrt{B/N}$).
+\end{enumerate}
+\end{attenzione}

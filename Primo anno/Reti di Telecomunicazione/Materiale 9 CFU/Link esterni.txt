@@ -1,0 +1,6 @@
+Link esterni (non scaricabili) dalla pagina https://cs.unibg.it/martignon/indexReti.html
+
+- Manuale utente IBM OPL: https://www.ibm.com/docs/en/icos/22.1.1?topic=opl-language-reference-manual
+- IBM ILOG CPLEX Optimization Studio: https://www.ibm.com/it-it/products/ilog-cplex-optimization-studio
+  (cliccare "Ottieni l'edizione accademica gratuita" -> "Software" -> "ILOG CPLEX Optimization Studio")
+- Guida CPLEX gratis per studenti: https://community.ibm.com/community/user/datascience/blogs/xavier-nodet1/2020/07/09/cplex-free-for-students

@@ -1,0 +1,230 @@
+\chapter{Reti di code e grado di servizio}\label{cap:reti}
+
+\begin{nota}[Come si riconosce]
+Testo del tipo \emph{«rete con link orientati di capacità $C_i$ (kbit/s), matrice dei flussi, pacchetti di 800 bit: si calcoli il ritardo medio $T$\dots»} oppure \emph{«due link in parallelo, si suddivida il traffico in modo ottimo»} oppure \emph{«si calcoli il valore di $\lambda$ che massimizza la potenza»}. Compare in $\approx 40\%$ dei temi (2005, 2006, 2007, 2009, 2025). Il calcolo è \textbf{sempre} lo stesso: carichi per link $\to$ $\sum_i \lambda_i/(\mu_i-\lambda_i)$ $\to$ divisione per $\gamma$.
+\end{nota}
+
+%==========================================================
+\section{Teoria minima}
+
+\subsection{Reti di code, Burke e Jackson (una pagina)}
+\begin{itemize}
+\item Rete di code: $M$ stazioni, ciascuna con la propria coda. Nei temi ogni \textbf{link orientato} è una coda M/M/1 (servente $=$ canale, servizio $=$ trasmissione del pacchetto).
+\item \textbf{Burke}: l'uscita di M/M/1 (M/M/$m$, M/M/$\infty$) in regime con arrivi Poisson $\lambda$ è ancora Poisson $\lambda$. Una cascata di code si può quindi studiare come M/M/1 separate.
+\item \textbf{Jackson} (rete aperta, routing casuale e indipendente dal passato, arrivi esterni Poisson): in regime la distribuzione congiunta è a \emph{prodotto}
+\[
+p(\mathbf n)=\prod_{i=1}^Mp_i(n_i),\qquad p_i(n_i)=(1-\rho_i)\rho_i^{n_i},\qquad \rho_i=\frac{\lambda_i}{\mu_i}<1 ,
+\]
+ogni coda si comporta come una M/M/1 indipendente alimentata dal traffico $\lambda_i$ (da risolvere con le equazioni di continuità del flusso); la rete influisce solo su $\rho_i$.
+\item \textbf{Ipotesi di indipendenza di Kleinrock}: nelle reti di pacchetti reali la lunghezza di un pacchetto è la stessa su ogni link attraversato (quindi i tempi di servizio \emph{non} sono indipendenti). L'ipotesi è che la miscelazione di molti flussi renda l'approssimazione accettabile: si usa quindi Jackson.
+\item Ritardo medio di un link: $\E[T_i]=\dfrac{1}{\mu_i-\lambda_i}$; ritardo di un cammino $=$ somma dei ritardi dei suoi link.
+\end{itemize}
+
+\subsection{Grado di servizio (QoS) della rete}
+\begin{formula}[Ritardo medio di rete $T^*$]
+\[
+T^*=\sum_{ij}\frac{\gamma_{ij}}{\gamma}\,T_{ij}
+\;=\;\frac1\gamma\sum_{i=1}^{M}\frac{\lambda_i}{\mu_i-\lambda_i},
+\qquad \mu_i=\frac{C_i}{\bar L},\qquad \gamma=\sum_{ij}\gamma_{ij}
+\]
+\end{formula}
+Derivazione (Little due volte): $\gamma T^*=\E[n]=\sum_i\E[n_i]$ e $\E[n_i]=\lambda_iT_i=\dfrac{\lambda_i}{\mu_i-\lambda_i}$. Qui $M$ è il numero di \textbf{link orientati}, $\lambda_i$ il traffico \emph{offerto al link $i$} (somma dei flussi che lo attraversano) e $\gamma$ il traffico \emph{entrante} in rete.
+
+\begin{attenzione}[Trappola n.\,1: $\gamma$ non è $\sum_i\lambda_i$]
+$\gamma$ è la somma dei flussi \emph{origine--destinazione} (ogni flusso conta una volta, anche se attraversa tre link). La somma dei carichi dei link è maggiore: il rapporto $\sum_i\lambda_i/\gamma$ è il \emph{numero medio di link attraversati}.
+\end{attenzione}
+
+%==========================================================
+\section{Procedura passo-passo}\label{sec:cap2-proc}
+
+\begin{procedura}[Calcolo di $T^*$ in 6 passi]
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Unità}: converti capacità e flussi in pacchetti/s dividendo per la lunghezza media $\bar L$: $\mu_i=C_i/\bar L$, $\gamma_{ij}=R_{ij}/\bar L$ (es.\ 128 kbit/s e $\bar L=800$ bit $\Rightarrow160$ pck/s).
+\item \textbf{Cammini}: per ogni flusso annota il cammino (dato dal testo o ovvio). \textbf{I link sono orientati}: AB e BA sono code diverse; il verso di BC/CB cambia da un tema all'altro, leggilo dalla figura.
+\item \textbf{Carichi}: $\lambda_i=$ somma dei flussi che passano per il link $i$ (un flusso su più hop contribuisce a \emph{tutti} i suoi link).
+\item $\gamma=\sum$ dei flussi origine--destinazione.
+\item $n_i=\dfrac{\lambda_i}{\mu_i-\lambda_i}$ per ogni link \emph{usato} (i link con $\lambda_i=0$ danno 0) e somma $\sum n_i$.
+\item $T^*=\dfrac{\sum n_i}{\gamma}$ (s/pck). Scrivi sempre l'\textbf{unità} (il testo la chiede in alcuni temi).
+\end{enumerate}
+\end{procedura}
+
+\begin{nota}[Se non è data la lunghezza dei pacchetti]
+Si può lavorare direttamente in kbit/s (2005-06-01): il risultato è in s per «kbit di traffico», cioè corrisponde a pacchetti da 1~kbit. Con pacchetti da $\bar L$ bit il valore vero è $T^*=T^*_{\text{kbit}}\cdot\bar L/1000$. Dichiara l'ipotesi nello svolgimento.\mio
+\end{nota}
+
+\subsection{Varianti richieste nei temi}
+\begin{formula}[$\eta_{\max}$, carico nullo, reinstradamento]
+\begin{align*}
+\text{Flussi}\times\eta:\quad &\eta_{\max}=\min_{i\ \text{usato}}\frac{\mu_i}{\lambda_i}
+\ \ (\text{collo di bottiglia: }T^*\to\infty)\\
+\text{Limite }\eta\to0:\quad &T^*\longrightarrow\frac{1}{\gamma}\sum_i\frac{\lambda_i}{\mu_i}\ \ (\neq0:\text{ solo servizio})\\
+\text{Hop medi:}\quad &\bar h=\frac{\sum_i\lambda_i}{\gamma}
+\end{align*}
+\end{formula}
+\begin{itemize}
+\item \textbf{Reinstradare una parte di un flusso} (o aggiungere un nuovo flusso): ricalcola i carichi $\lambda_i$ \emph{solo dei link toccati} dal cambiamento e confronta i $T^*$ (con $\gamma$ aggiornato se il flusso è nuovo).
+\item \textbf{Flusso non splittabile} da piazzare su uno di due cammini: calcola $T^*$ per entrambe le scelte con lo stesso metodo e scegli la più bassa.
+\end{itemize}
+
+%==========================================================
+\section{Due link in parallelo: instradamento ottimo}\label{sec:cap2-par}
+
+Due link $L_1,L_2$ di capacità $V_1,V_2$ (pck/s) in parallelo fra A e B, traffico totale $\Lambda$ (pck/s). \textbf{Senza suddivisione}: tutto il flusso su un link (se ci sono due flussi, uno per link). \textbf{Con suddivisione}: $X$ pck/s su $L_1$ e $\Lambda-X$ su $L_2$.
+
+\begin{center}
+\begin{tikzpicture}[node distance=3.2cm]
+\node[st] (A) {A}; \node[st,right=of A] (B) {B};
+\draw[-{Stealth[length=2mm]},thick] (A) to[bend left=35] node[above,lab]{$L_1,\ V_1$\quad quota $X$} (B);
+\draw[-{Stealth[length=2mm]},thick] (A) to[bend right=35] node[below,lab]{$L_2,\ V_2$\quad quota $\Lambda-X$} (B);
+\end{tikzpicture}
+\end{center}
+
+\begin{formula}[Ritardo e punto di ottimo]
+\[
+T(X)=\frac1\Lambda\Big[\frac{X}{V_1-X}+\frac{\Lambda-X}{V_2-\Lambda+X}\Big],\qquad 0\le X\le\min(\Lambda,V_1)
+\]
+\[
+\frac{dT}{dX}=0\iff\frac{V_1}{(V_1-X)^2}=\frac{V_2}{(V_2-\Lambda+X)^2}
+\iff
+\boxed{X^*=\frac{V_1-k\,(V_2-\Lambda)}{1+k},\quad k=\sqrt{\frac{V_1}{V_2}}}
+\]
+\end{formula}
+\textbf{Controlli}: $0\le X^*\le\min(\Lambda,V_1)$ e $\Lambda-X^*<V_2$. Se $X^*<0$ tutto su $L_2$; se $X^*>\Lambda$ tutto su $L_1$ (vincolo attivo). La seconda radice di una eventuale equazione di 2\textdegree\ grado è fuori dal vincolo: scartala.
+
+\begin{nota}[Semplificazione del testo]
+Se $V_2=\Lambda$ allora $V_2-\Lambda+X=X$ e $T=\tfrac1\Lambda\big(\tfrac X{V_1-X}+\tfrac{\Lambda-X}{X}\big)$ (caso 2025). In generale scrivi sempre $V_2-(\Lambda-X)$.
+\end{nota}
+
+%==========================================================
+\section{Funzione potenza (M/M/1)}
+
+\begin{formula}[Potenza]
+\[\begin{gathered}
+\mathcal P=\frac{\text{traffico smaltito}}{\text{ritardo}}=\lambda\,(\mu-\lambda),\qquad
+\frac{d\mathcal P}{d\lambda}=\mu-2\lambda=0\\
+\Rightarrow\ \boxed{\lambda^*=\tfrac\mu2},\ \rho^*=\tfrac12,\ N=1,\ \mathcal P_{\max}=\tfrac{\mu^2}{4}
+\end{gathered}\]
+\end{formula}
+Il traffico smaltito di M/M/1 infinita è $\lambda$ (\textbf{non} $\mu$); il ritardo è $T=1/(\mu-\lambda)$. Il grafico $\mathcal P(\lambda)$ è un arco di parabola definito per $0<\lambda<\mu$ (stabilità). \emph{Interpretazione:} con $N=1$ la coda è mediamente vuota (ritardo basso) e il servente è comunque occupato a smaltire traffico: è il miglior compromesso traffico/ritardo.
+
+%==========================================================
+\section{Flow deviation (cenni)}
+
+Metodo iterativo per l'instradamento ottimo: sposta a ogni passo una piccola frazione di flusso sul cammino \emph{più corto} secondo lunghezze di link pari alla derivata del ritardo,
+\[
+\ell_i=\frac{\partial T_i}{\partial\lambda_i}=\frac{1}{(\mu_i-\lambda_i)^2}\quad(\text{slide; per il ritardo totale della rete: }\tfrac{\mu_i}{(\mu_i-\lambda_i)^2}\mio),
+\]
+poi ricalcola i flussi e itera, fermandoti quando le pendenze dei cammini alternativi sono uguali (condizione di ottimo, la stessa del caso a due link). Gli spostamenti devono essere piccoli per evitare oscillazioni. È una domanda di teoria (cap.~\ref{cap:teoria}).
+
+%==========================================================
+\section{Esercizi svolti}
+
+\begin{esempio}{14/06/2005, Es.~1 --- Funzione potenza M/M/1}
+\textbf{Testo.} Si scriva la potenza $\mathcal P=\text{traffico smaltito}/\text{ritardo}$, si trovi $\lambda$ che la massimizza (a $\mu$ fisso), $N$ nel punto di massimo e si commenti.\\
+\textbf{Svolgimento.} Stabile per $\lambda<\mu$. $\mathcal P=\lambda\cdot\tfrac1{T}=\lambda(\mu-\lambda)$; vertice $\lambda^*=\mu/2$; $N=\tfrac{\lambda}{\mu-\lambda}=1$; $\rho^*=\tfrac12$, $\mathcal P_{\max}=\mu^2/4$.
+\end{esempio}
+
+\begin{esempio}{14/06/2005, Es.~3 --- Due link paralleli (48 e 64 kbit/s, traffico 32 kbit/s)}
+\textbf{Dati.} Pacchetti da 800 bit $\Rightarrow V_1=60$, $V_2=80$, $\Lambda=40$ pck/s.\\
+\textbf{(1) Senza suddivisione}: tutto su $L_2$ (il più veloce): $T=\dfrac1{80-40}=25$ ms. (Su $L_1$: $\tfrac1{60-40}=50$ ms.)\\
+\textbf{(2) Con suddivisione.} $T(X)=\tfrac1{40}\Big(\tfrac{X}{60-X}+\tfrac{40-X}{40+X}\Big)$. Condizione: $\dfrac{60}{(60-X)^2}=\dfrac{80}{(40+X)^2}$, ovvero $X^2-720X+9600=0$; la radice in $[0,40]$ è $X^*=13.59$ pck/s su $L_1$ (con la formula chiusa: $k=\sqrt{60/80}$, $X^*=\tfrac{60-k\cdot40}{1+k}=13.59$) e $40-X^*=26.41$ su $L_2$.
+\[T_{\min}=\tfrac1{40}\Big(\tfrac{13.59}{46.41}+\tfrac{26.41}{53.59}\Big)=19.64\ \text{ms}\ (<25\text{ ms}).\]
+\end{esempio}
+
+\begin{esempio}{01/06/2005, Es.~1 --- Rete a 5 link e reinstradamento (soluzione ricalcolata\mio)}
+Link orientati (kbit/s): AB 64, AC 48, BC 64, BD 48, CD 64. Flussi (cammino diretto, kbit/s): AB 32, AC 32, BC 32, BD 36, CD 36; $\gamma=168$. Lunghezza pacchetti non data: lavoro in kbit/s.
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule & AB & AC & BC & BD & CD\\\midrule
+$\lambda_i$ & 32 & 32 & 32 & 36 & 36\\
+$\mu_i$ & 64 & 48 & 64 & 48 & 64\\
+$n_i=\lambda_i/(\mu_i-\lambda_i)$ & 1 & 2 & 1 & 3 & 1.286\\\bottomrule
+\end{tabular}
+\end{center}
+$\sum n_i=8.286$, $T^*=8.286/168=0.0493$ s/kbit.
+
+\textbf{Reinstradando 4 dei 36 kbit/s di BD su B$\to$C$\to$D}: BD 32 ($n=2$), BC 36 ($n=1.286$), CD 40 ($n=1.667$); AB e AC invariati. $\sum n_i=7.952$, $T'=0.04734$: il ritardo scende del $\approx4\%$, \textbf{conviene}.
+\end{esempio}
+
+\begin{esempio}{13/06/2006, Es.~2 --- Rete con flussi multi-hop e $\eta_{\max}$}
+Link (kbit/s): AB 128, AC 24, BC 64, BD 48, CD 72; pacchetti 800 bit $\Rightarrow\mu_i=160,\,30,\,80,\,60,\,90$ pck/s. Flussi (kbit/s) e cammini: AB 32 (AB), AC 16 (A-B-C), AD 16 (A-C-D), BC 32 (BC), BD 32 (BD), CD 32 (CD) $\Rightarrow$ in pck/s 40, 20, 20, 40, 40, 40, $\gamma=200$.
+
+Carichi: $\lambda_{AB}=40+20=60$; $\lambda_{AC}=20$ (solo AD); $\lambda_{BC}=20+40=60$; $\lambda_{BD}=40$; $\lambda_{CD}=20+40=60$.
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule & AB & AC & BC & BD & CD\\\midrule
+$\lambda_i$ & 60 & 20 & 60 & 40 & 60\\ $\mu_i$ & 160 & 30 & 80 & 60 & 90\\
+$n_i$ & 0.6 & 2 & 3 & 2 & 2\\ $\mu_i/\lambda_i$ & 2.67 & 1.5 & \textbf{1.33} & 1.5 & 1.5\\\bottomrule
+\end{tabular}
+\end{center}
+$\sum n_i=9.6$, $T^*=9.6/200=48$ ms. $\eta_{\max}=\min\mu_i/\lambda_i=4/3$ (collo di bottiglia BC: $\tfrac43\cdot60=80=\mu_{BC}$).
+\end{esempio}
+
+\begin{esempio}{12/06/2007, Es.~2 --- Rete e flusso non splittabile (soluzione ricalcolata\mio)}
+Link (kbit/s, 1200 bit $\Rightarrow$ pck/s): AB 120 (100), AC 60 (50), CB 72 (60), BD 96 (80), CD 36 (30). Flussi (kbit/s): AB 36 (AB), AC 24 (AC), AD 24 (A-C-D), BD 36 (BD), CB 24 (CB), CD 36 (C-B-D); in pck/s 30, 20, 20, 30, 20, 30, $\gamma=150$.
+
+Carichi: AB 30; AC $20+20=40$; CB $20+30=50$; BD $30+30=60$; CD 20.
+$n_i=0.429,\ 4,\ 5,\ 3,\ 2$, $\sum n_i=14.43$, $T^*=14.43/150=96.2$ ms.
+
+\textbf{Nuovo flusso C$\to$D da 6 kbit/s $=5$ pck/s, non splittabile} ($\gamma=155$):
+\begin{itemize}[nosep]
+\item diretto su CD: $\lambda_{CD}=25$ ($n=5$), $\sum n=17.43$, $T^*=112.4$ ms;
+\item via C-B-D: CB 55 ($n=11$), BD 65 ($n=4.33$), $\sum n=21.76$, $T^*=140.4$ ms.
+\end{itemize}
+Si sceglie il \textbf{diretto} ($T^*=112.4$ ms).
+\end{esempio}
+
+\begin{esempio}{28/05/2009, Es.~2 --- Rete con $\eta_{\max}$ e limite $\eta\to0$ (ricalcolata\mio)}
+Link (kbit/s; 1200 bit): AB 48 (40), AC 72 (60), CB 60 (50), BD 96 (80), CD 84 (70). Flussi (kbit/s): AB 36 (AB), AC 24 (AC), AD 24 (A-C-B-D), BD 36 (BD), CD 12 (C-B-D); in pck/s 30, 20, 20, 30, 10, $\gamma=110$.
+
+Carichi: AB 30; AC $20+20=40$; CB $20+10=30$; BD $20+30+10=60$; CD 0 (non usato).
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule & AB & AC & CB & BD\\\midrule
+$\lambda_i$ & 30 & 40 & 30 & 60\\ $\mu_i$ & 40 & 60 & 50 & 80\\
+$n_i$ & 3 & 2 & 1.5 & 3\\ $\mu_i/\lambda_i$ & \textbf{1.33} & 1.5 & 1.67 & \textbf{1.33}\\\bottomrule
+\end{tabular}
+\end{center}
+$T^*=9.5/110=0.0864$ s/pck $=86.4$ ms/pck; $\eta_{\max}=4/3$ (AB e BD in parità). Per $\eta\to0$: $T^*\to\tfrac1{110}\big(\tfrac{30}{40}+\tfrac{40}{60}+\tfrac{30}{50}+\tfrac{60}{80}\big)=25.15$ ms/pck, \emph{non} zero.
+\end{esempio}
+
+\begin{esempio}{23/05/2025, Es.~2 --- Due link, flussi non splittabili poi splittabili}
+Link A--B: $L_1=80$, $L_2=100$ kbit/s; flussi $f_1=40$, $f_2=60$ kbit/s; pacchetti 1000 bit $\Rightarrow V_1=80$, $V_2=100$, $\Lambda_1=40$, $\Lambda_2=60$, $\gamma=100$ pck/s.\\
+\textbf{(1) Non splittabile}: $f_1\to L_1$, $f_2\to L_2$:
+\[T=\tfrac1{100}\Big(\tfrac{40}{80-40}+\tfrac{60}{100-60}\Big)=\tfrac1{100}(1+1.5)=25\ \text{ms}.\]
+(L'assegnazione inversa dà $\tfrac1{100}\big(\tfrac{60}{20}+\tfrac{40}{60}\big)=36.7$ ms: giustifica la scelta «ovvia».\mio)\\
+\textbf{(2) Splittabile}: $T(X)=\tfrac1{100}\Big(\tfrac X{80-X}+\tfrac{100-X}{X}\Big)$ (qui $V_2=\Lambda$, perciò $V_2-(100-X)=X$). Condizione $\dfrac{80}{(80-X)^2}=\dfrac{100}{X^2}$, cioè $\tfrac{X}{80-X}=\sqrt{\tfrac{100}{80}}$:
+\[X^*=42.23\ \text{pck/s su }L_1,\quad 57.77\ \text{su }L_2,\quad T_{\min}=24.86\ \text{ms}.\]
+\end{esempio}
+
+%==========================================================
+\section{Riepilogo dei risultati}
+\begin{center}\small
+\begin{tabular}{lllc}
+\toprule
+Tema & Richiesta & $\gamma$ [pck/s o kbit/s] & Risultato\\
+\midrule
+2005-06-01 & $T^*$; reinstradamento & 168 (kbit/s) & $0.0493\to0.0473$ s/kbit\\
+2005-06-14 & potenza; 2 link & --- ; $\Lambda=40$ & $\lambda^*=\mu/2$; $X^*=13.59$, $T=19.64$ ms\\
+2006-06-13 & $T^*$, $\eta_{\max}$ & 200 & 48 ms; $4/3$\\
+2007-06-12 & $T^*$; flusso nuovo & 150; 155 & 96.2 ms; diretto 112.4 ms\\
+2009 & $T^*$, $\eta_{\max}$, $\eta\to0$ & 110 & 86.4 ms; $4/3$; 25.15 ms\\
+2025 & 2 link, non split / split & 100 & 25 ms; $X^*=42.23$, 24.86 ms\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==========================================================
+\section{Errori frequenti}
+\begin{attenzione}[Elenco di trappole]
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Unità}: dividi kbit/s per la lunghezza media del pacchetto \emph{prima} di calcolare $\mu_i-\lambda_i$. Se $\bar L$ non è data, dichiara che lavori in kbit/s.
+\item \textbf{Link orientati}: conta separatamente AB e BA; leggi il verso dalla figura (BC nel 2005--06, CB nel 2007 e 2009).
+\item $\gamma$ è la somma dei flussi O--D, non dei carichi dei link; non dimenticare $1/\gamma$.
+\item Flussi multi-hop: il carico va aggiunto a \emph{ogni} link del cammino.
+\item Link non usato ($\lambda_i=0$) $\Rightarrow n_i=0$ ed è escluso dal minimo di $\eta_{\max}$ (es.\ CD nel 2009).
+\item $\eta\to0$ non dà $T^*=0$ ma il ritardo di solo servizio $\frac1\gamma\sum\lambda_i/\mu_i$.
+\item Due link: verifica $0\le X^*\le\min(\Lambda,V_1)$ e che la seconda radice (se compare un'equazione quadratica) sia esclusa.
+\item \textbf{Slide~16--18 di \emph{Reti di code}} (rete a 6 nodi, $\gamma=124$ pck/s): la tabella elenca i carichi di \emph{una sola direzione} dei link full-duplex (somma 82 pck/s; ambo le direzioni 164). Il risultato $T^*=114$ ms vale solo contando \emph{entrambe} le direzioni ($\sum n_i$ della tabella $\times2=14.2$, $/124$). Contando le 8 righe una sola volta si otterrebbero 57 ms (errato). I $164/124=1.32$ link medi per pacchetto sono invece coerenti col totale a due direzioni.
+\end{enumerate}
+\end{attenzione}

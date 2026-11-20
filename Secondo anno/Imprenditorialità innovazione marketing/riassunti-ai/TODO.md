@@ -1,0 +1,161 @@
+# TODO Capitoli
+Todo list per i capitoli da riassumere:
+
+- [x] Capitolo 1: Introduction: Context, issues and case study selection
+  - [x] Pag. 1
+  - [x] Pag. 2
+  - [x] Pag. 3
+  - [x] Pag. 4
+  - [x] Pag. 5
+  - [x] Pag. 6
+  - [x] Pag. 7
+  - [x] Pag. 8
+  - [x] Pag. 9
+  - [x] Pag. 10
+  - [x] Pag. 11
+  - [x] Pag. 12
+  - [x] Pag. 13
+  
+- [x] Capitolo 2: Contributions of entrepreneurial firms
+  - [x] Pag. 15
+  - [x] Pag. 16
+  - [x] Pag. 17
+  - [x] Pag. 18
+  - [x] Pag. 19
+  - [x] Pag. 20
+  - [x] Pag. 21
+  - [x] Pag. 22
+  - [x] Pag. 23
+  - [x] Pag. 24
+  - [x] Pag. 25
+  - [x] Pag. 26
+  - [x] Pag. 27
+  - [x] Pag. 28
+  - [x] Pag. 29
+  
+- [x] Capitolo 5: ‘Types’ of entrepreneurs I: Habitual entrepreneurs
+  - [x] Pag. 75
+  - [x] Pag. 76
+  - [x] Pag. 77
+  - [x] Pag. 78
+  - [x] Pag. 79
+  - [x] Pag. 80
+  - [x] Pag. 81
+  - [x] Pag. 82
+  - [x] Pag. 83
+  - [x] Pag. 84
+  - [x] Pag. 85
+  - [x] Pag. 86
+  - [x] Pag. 87
+  - [x] Pag. 88
+  - [x] Pag. 89
+  - [x] Pag. 90
+  - [x] Pag. 91
+  - [x] Pag. 92
+  - [x] Pag. 93
+  - [x] Pag. 94
+  
+- [ ] Capitolo 6: ‘Types’ of entrepreneurs II: High technology and academic entrepreneurs
+  - [ ] Pag. 95
+  - [ ] Pag. 96
+  - [ ] Pag. 97
+  - [ ] Pag. 98
+  - [ ] Pag. 99
+  - [ ] Pag. 100
+  - [ ] Pag. 101
+  - [ ] Pag. 102
+  - [ ] Pag. 103
+  - [ ] Pag. 104
+  - [ ] Pag. 105
+  - [ ] Pag. 106
+  - [ ] Pag. 107
+  - [ ] Pag. 108
+  - [ ] Pag. 109
+  - [ ] Pag. 110
+  - [ ] Pag. 111
+
+- [ ] Capitolo 7: ‘Types’ of organisations I: Family firms
+  - [ ] Pag. 113
+  - [ ] Pag. 114
+  - [ ] Pag. 115
+  - [ ] Pag. 116
+  - [ ] Pag. 117
+  - [ ] Pag. 118
+  - [ ] Pag. 119
+  - [ ] Pag. 120
+  - [ ] Pag. 121
+  - [ ] Pag. 122
+  - [ ] Pag. 123
+  - [ ] Pag. 124
+  - [ ] Pag. 125
+  - [ ] Pag. 126
+  - [ ] Pag. 127
+  - [ ] Pag. 128
+  - [ ] Pag. 129
+  - [ ] Pag. 130
+  - [ ] Pag. 131
+  - [ ] Pag. 132
+
+- [ ] Capitolo 8: ‘Types’ of organisations II: Corporate entrepreneurship
+  - [ ] Pag. 134
+  - [ ] Pag. 135
+  - [ ] Pag. 136
+  - [ ] Pag. 137
+  - [ ] Pag. 138
+  - [ ] Pag. 139
+  - [ ] Pag. 140
+  - [ ] Pag. 141
+  - [ ] Pag. 142
+  - [ ] Pag. 143
+  - [ ] Pag. 144
+  - [ ] Pag. 145
+  - [ ] Pag. 146
+  - [ ] Pag. 147
+
+- [ ] Capitolo 11: External environmental context: Drivers and barriers
+  - [ ] Pag. 175
+  - [ ] Pag. 176
+  - [ ] Pag. 177
+  - [ ] Pag. 178
+  - [ ] Pag. 179
+  - [ ] Pag. 180
+  - [ ] Pag. 181
+  - [ ] Pag. 182
+  - [ ] Pag. 183
+  - [ ] Pag. 184
+  - [ ] Pag. 185
+  - [ ] Pag. 186
+  - [ ] Pag. 187
+  - [ ] Pag. 188
+  - [ ] Pag. 189
+  - [ ] Pag. 190
+  - [ ] Pag. 191
+  - [ ] Pag. 192
+  - [ ] Pag. 193
+
+- [ ] Capitolo 12: Entrepreneurial finance
+  - [ ] Pag. 195
+  - [ ] Pag. 196
+  - [ ] Pag. 197
+  - [ ] Pag. 198
+  - [ ] Pag. 199
+  - [ ] Pag. 200
+  - [ ] Pag. 201
+  - [ ] Pag. 202
+  - [ ] Pag. 203
+  - [ ] Pag. 204
+  - [ ] Pag. 205
+  - [ ] Pag. 206
+  - [ ] Pag. 207
+  - [ ] Pag. 208
+  - [ ] Pag. 209
+  - [ ] Pag. 210
+  - [ ] Pag. 211
+  - [ ] Pag. 212
+  - [ ] Pag. 213
+  - [ ] Pag. 214
+  - [ ] Pag. 215
+  - [ ] Pag. 216
+  - [ ] Pag. 217
+  
+  

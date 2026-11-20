@@ -1,0 +1,383 @@
+\chapter{Code e catene di Markov}\label{cap:code}
+
+\begin{nota}[Come si riconosce]
+Testo del tipo \emph{«un servente, due posti in coda, arrivi Poisson $\lambda$, servizio esponenziale $\mu$\dots\ si disegni la catena, si calcolino $N$, $T$, $W$, $\lambda_r$»}.
+È l'Es.~1 in $\approx 90\%$ dei temi. Tutti gli esercizi seguono lo stesso schema: \textbf{catena $\to$ equazioni di taglio $\to$ normalizzazione $\to$ metriche (con Little)}. Impara il template (§\ref{sec:template}) e le sei varianti (§\ref{sec:varianti}).
+\end{nota}
+
+%==========================================================
+\section{Teoria minima}
+
+\subsection{Processi di base}
+\begin{formula}[Poisson, esponenziale, Erlang]
+\begin{align*}
+&\text{Poisson:}& \Pr(n,t)&=\frac{(\lambda t)^n}{n!}e^{-\lambda t}, & \E[n]&=\mathrm{Var}[n]=\lambda t\\
+&\text{Esponenziale:}& F(t)&=1-e^{-\lambda t}, & \E[t]&=\tfrac1\lambda,\quad \mathrm{Var}=\tfrac1{\lambda^2}\\
+&\text{Erlang-}k\text{ (media }\tfrac1\mu\text{):}& &k\text{ stadi esponenziali di tasso }k\mu & \mathrm{Var}&=\tfrac1{k\mu^2},\quad C_X=\tfrac1{\sqrt k}\\
+&\text{Iperesp.:}& f(t)&=\sum_i\alpha_i\lambda_ie^{-\lambda_it}, & \E[t]&=\sum_i\tfrac{\alpha_i}{\lambda_i}
+\end{align*}
+\end{formula}
+\begin{itemize}
+\item L'esponenziale è \textbf{senza memoria}: da qualunque istante, il tempo residuo è ancora esponenziale. Per questo basta lo \emph{stato corrente} per descrivere il sistema.
+\item Somma di Poisson indipendenti $=$ Poisson con somma dei tassi. Partizione casuale con prob.\ $q$ di un flusso Poisson $\lambda$ $=$ Poisson $q\lambda$. Ripartizione \emph{deterministica} (round-robin su $u$ uscite) $\Rightarrow$ interarrivi Erlang-$u$.
+\item Un servizio Erlang-$k$ di media $1/\mu$ si modella come $k$ stadi in serie ciascuno di tasso $k\mu$ (media $\tfrac1{k\mu}$): è il «metodo degli stadi».
+\end{itemize}
+
+\subsection{Equilibrio di flusso}
+In regime stazionario, per ogni nodo (e per ogni \emph{taglio} che separa gli stati in due insiemi) \textbf{flusso entrante $=$ flusso uscente}. Con $N$ stati le equazioni sono $N-1$ indipendenti, più la normalizzazione $\sum_k p_k=1$.
+
+\begin{formula}[Catena nascita--morte (equazioni di taglio)]
+\[
+\lambda_{k}\,p_k=\mu_{k+1}\,p_{k+1}
+\quad\Longrightarrow\quad
+p_n=p_0\prod_{k=0}^{n-1}\frac{\lambda_k}{\mu_{k+1}},\qquad
+p_0=\Big[1+\sum_{n\ge1}\prod_{k=0}^{n-1}\frac{\lambda_k}{\mu_{k+1}}\Big]^{-1}
+\]
+\end{formula}
+\begin{nota}[Tagli = scorciatoia]
+Su una catena lineare scrivi i tagli «tra $k$ e $k+1$» (non il bilancio dei singoli nodi): ottieni subito $p_{k+1}$ in funzione di $p_k$. Sulle catene non lineari (vacation, eterogenei, Erlang) scrivi invece il bilancio ai nodi, partendo da quelli con meno archi.
+\end{nota}
+
+\subsection{Little e traffico accettato}
+\begin{formula}[Little]
+\[
+N=\la\,T,\qquad \Nq=\la\,W,\qquad T=W+\frac1\mu ,\qquad \la=\lambda-\lr=\lambda(1-\Pb)
+\]
+\end{formula}
+Vale per \emph{qualunque} sistema stabile in regime: per il sistema intero, per la sola coda, per il solo servente. È dimostrato col trucco di Stidham (cap.~\ref{cap:teoria}).
+
+\begin{attenzione}[Trappola n.\,1: offerto vs accettato]
+In un sistema a \textbf{perdita} (coda finita) il $\lambda$ di Little è il traffico \emph{accettato} $\la=\lambda(1-\Pb)$, \textbf{non} quello offerto. Con $\lambda$ si sbaglia $T$ e $W$.
+\end{attenzione}
+
+\subsection{Probabilità di blocco e PASTA}
+\begin{itemize}
+\item Con arrivi \textbf{Poisson} (e $\lambda$ indipendente dallo stato) la probabilità che un arrivo trovi il sistema pieno è \emph{uguale} alla frazione di tempo in cui il sistema è pieno: $\Pb=p_C$ (proprietà PASTA).
+\item Con arrivi \textbf{non Poisson} (Erlang, dipendenti dallo stato) \textbf{non} vale: bisogna condizionare agli \emph{istanti di arrivo}. Esempio: caso E$_2$|M|1|0 (§\ref{sec:e2m10}).
+\item Nei temi con arrivi scoraggiati $\lambda_n=\lambda/(n+1)$ il professore pone comunque $\Pb=p_C$ (prob.\ dello stato pieno): fai così.
+\end{itemize}
+
+\subsection{Stabilità}
+\begin{itemize}
+\item \textbf{Coda finita} $\Rightarrow$ il sistema è stabile \emph{per ogni} $\lambda,\mu$ (è la risposta alla domanda «condizioni di stabilità»; compare in quasi ogni tema).
+\item Coda infinita: $\rho=\lambda/\mu<1$ (con $m$ serventi: $\lambda<m\mu$).
+\end{itemize}
+
+%==========================================================
+\section{Template di risoluzione}\label{sec:template}
+
+\begin{procedura}[Le 8 mosse del professore]
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Stabilità}: coda finita $\Rightarrow$ sempre stabile; infinita $\Rightarrow\rho<1$.
+\item \textbf{Stato} (a parole): «numero di pacchetti nel sistema $0..C$». Se serve, coppia $(n,\text{fase})$: fase Erlang, servente occupato (eterogenei), lavoro/vacanza, permessi/pacchetti.
+\item \textbf{Disegna la catena}: $\lambda$ avanti, tasso di servizio indietro (con $m$ serventi: $\min(n,m)\mu$). Disegna il traffico perso come autoanello $\lambda$ sullo stato pieno.
+\item \textbf{Equazioni di taglio/bilancio} (semplici, a mano).
+\item Esprimi tutto in funzione di $p_0$ e \textbf{normalizza} ($\sum p=1$). Prima in forma letterale con $\rho=\lambda/\mu$, poi sostituisci i numeri.
+\item \textbf{Metriche}: $\Pb=p_C$; $N=\sum kp_k$; $\lr=\lambda\Pb$; $\la=\lambda-\lr$.
+\item \textbf{Little}: $T=N/\la$; $W=T-1/\mu$ \emph{oppure} $W=\Nq/\la$ con $\Nq=\sum_{k\ge m}(k-m)p_k$. Calcola i due modi e verifica che coincidano.
+\item \textbf{Controlli}: $\sum p_k=1$; traffico accettato $=$ traffico servito: $\la=\mu\cdot\Pr(\text{servente occupato})$ (con $m=1$: $\la=\mu(1-p_0)$).
+\end{enumerate}
+\end{procedura}
+
+\begin{formula}[Tabella delle metriche]
+\centering
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+Grandezza & Formula\\
+\midrule
+Blocco & $\Pb=p_C$ (stato pieno)\\
+N medio nel sistema & $N=\sum_k k\,p_k$\\
+N medio in coda & $\Nq=\sum_{k>m}(k-m)\,p_k$ \quad (1 servente: $\sum_k(k-1)p_k$)\\
+Traffico perso / accettato & $\lr=\lambda\Pb$,\quad $\la=\lambda(1-\Pb)$\\
+Tempo nel sistema & $T=N/\la$\\
+Tempo in coda & $W=T-\tfrac1\mu=\Nq/\la$\\
+Utilizzo (1 servente) & $\la/\mu=1-p_0$\\
+Coda nulla (nessun posto d'attesa) & $W=0$,\ $T=1/\mu$ \textbf{senza calcoli}\\
+\bottomrule
+\end{tabularx}
+\end{formula}
+
+\begin{nota}[Domanda a trabocchetto «si poteva rispondere senza calcoli?»]
+Se il sistema non ha coda (M/M/2/2, M/M/3/3, M/E$_k$/1/1\dots) un pacchetto accettato va subito in servizio: $W=0$ e $T=1/\mu$ (o la media del servizio). Compare nei temi 2006, 2007, 2009.
+\end{nota}
+
+%==========================================================
+\section{Formulario dei modelli}
+
+\begin{formula}[Modelli classici]
+\centering\small
+\renewcommand{\arraystretch}{1.55}
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+Modello & Distribuzione e grandezze\\
+\midrule
+M/M/1 ($\rho<1$) &
+$p_k=(1-\rho)\rho^k$,\ $N=\dfrac{\rho}{1-\rho}$,\ $T=\dfrac{1}{\mu-\lambda}$,\ $W=\dfrac{\rho}{\mu-\lambda}$,\ $\Pr[n\ge k]=\rho^k$\\
+M/M/1/$C$ (1 servente, $C$ posti totali) &
+$p_k=\dfrac{(1-\rho)\rho^k}{1-\rho^{C+1}}$ ($\rho=1$: $p_k=\tfrac1{C+1}$),\ $\Pb=p_C$,\ $\la=\lambda(1-p_C)=\mu(1-p_0)$\\
+M/M/$m$/$m$ (Erlang B) &
+$p_n=\dfrac{\rho^n/n!}{\sum_{j=0}^m\rho^j/j!}$,\ $\Pb=p_m$.\ Vale per \emph{qualunque} distribuzione di servizio con media $1/\mu$ (insensibilità)\\
+M/M/$m$/$K$ ($K\ge m$) &
+$p_n=\dfrac{\rho^n}{n!}p_0$ ($n\le m$),\quad $p_n=\dfrac{\rho^n}{m!\,m^{n-m}}p_0$ ($m<n\le K$)\\
+M/M/$\infty$ & $p_n=\dfrac{\rho^n}{n!}e^{-\rho}$ (Poisson), $N=\rho$, $T=1/\mu$\\
+M/G/1 (Pollaczek--Khinchin) &
+$W=\dfrac{\lambda\,\overline{x^2}}{2(1-\rho)}$,\ $T=\tfrac1\mu+W$,\ $N=\lambda T$.\ M/M/1: $\overline{x^2}=\tfrac{2}{\mu^2}$; M/D/1: $\overline{x^2}=\tfrac1{\mu^2}$ ($W$ dimezzato)\\
+M/M/1/$\infty$/$M$ (Engset) &
+$\lambda_n=(M-n)\gamma$,\ $p_n=p_0\big(\tfrac\gamma\mu\big)^n\tfrac{M!}{(M-n)!}$,\ $T=\dfrac{M}{\mu(1-p_0)}-\dfrac1\gamma$\\
+Arrivi scoraggiati & $\lambda_n=\tfrac{\lambda}{n+1}$, $\mu_n=\mu$: $p_n=\dfrac{\rho^n}{n!}e^{-\rho}$ (se infinita), $\la=\mu(1-p_0)$\\
+\bottomrule
+\end{tabularx}
+\end{formula}
+\begin{attenzione}[Convenzione di $C$ e di $\rho$]
+Nelle slide $C$ \textbf{include} l'utente in servizio: «un servente e 2 posti in coda» $\Rightarrow C=3$, stati $0,1,2,3$. In una coda finita $\rho=\lambda/\mu$ \emph{può superare 1}: la formula $p_k\propto\rho^k$ resta valida. Se $\rho=1$ tutti gli stati hanno la stessa probabilità $1/(C+1)$ (M/M/1/$C$).
+\end{attenzione}
+
+%==========================================================
+\section{Varianti ricorrenti}\label{sec:varianti}
+
+\subsection{Coda finita con un servente: M/M/1/3}
+Un servente $+$ 2 posti. Stati $0..3$. Taglio $k\,|\,k{+}1$: $\lambda p_k=\mu p_{k+1}$.
+\begin{center}
+\bdchain{3}{0/{$\lambda$},1/{$\lambda$},2/{$\lambda$}}{1/{$\mu$},2/{$\mu$},3/{$\mu$}}{\draw[lp] (s3) to node[above,lab]{$\lambda$ (perso)} (s3);}
+\end{center}
+
+\subsection{Più serventi senza coda: M/M/$m$/$m$}
+Uscita dallo stato $k$: $k\mu$ (ognuno dei $k$ serventi occupati finisce a tasso $\mu$).
+\begin{center}
+\bdchain{3}{0/{$\lambda$},1/{$\lambda$},2/{$\lambda$}}{1/{$\mu$},2/{$2\mu$},3/{$3\mu$}}{\draw[lp] (s3) to node[above,lab]{$\lambda$} (s3);}
+\end{center}
+Esempio ($m=3$): $p_n=\dfrac{\rho^n/n!}{\sum\rho^k/k!}$; con $\rho=1$: $p=(6,6,3,1)/16$, $\Pb=1/16$, $N=15/16$.
+
+\subsection{Più serventi con coda: M/M/2/3}
+Tassi di servizio $\mu,\,2\mu,\,2\mu$ (dal terzo stato i due serventi sono occupati e uno utente aspetta).
+\begin{center}
+\bdchain{3}{0/{$\lambda$},1/{$\lambda$},2/{$\lambda$}}{1/{$\mu$},2/{$2\mu$},3/{$2\mu$}}{\draw[lp] (s3) to node[above,lab]{$\lambda$} (s3);}
+\end{center}
+
+\subsection{Arrivi dipendenti dallo stato}
+\textbf{Scarto probabilistico}: un pacchetto che trova $n$ utenti è scartato con prob.\ $q_n$ $\Rightarrow$ $\lambda_n=\lambda(1-q_n)$. Es.\ $q_n=n/3$: archi $\lambda,\tfrac23\lambda,\tfrac13\lambda$ e
+\[
+p_1=\rho p_0,\quad p_2=\tfrac23\rho^2p_0,\quad p_3=\tfrac29\rho^3p_0,\qquad
+\lr=\sum_n\lambda q_np_n\ (\text{con }q_3=1).
+\]
+\textbf{Scoraggiati}: $\lambda_n=\lambda/(n+1)$ (M/M/2/2: archi $\lambda,\ \lambda/2$).
+
+\subsection{Servizio Erlang-$k$: M/E$_k$/1/1 (metodo degli stadi)}
+Stato $0$ oppure $(1.j)$: utente in servizio allo stadio $j$. Ogni stadio ha tasso $k\mu$. Gli arrivi che trovano il servente occupato sono persi (autoanelli $\lambda$ su $1.1,\dots,1.k$).
+\begin{center}
+\begin{tikzpicture}[node distance=2.1cm]
+\node[st] (0) {0}; \node[st,right=of 0,minimum size=9mm] (a) {1.1}; \node[st,right=of a,minimum size=9mm] (b) {1.2};
+\draw[fw] (0) to node[above,lab]{$\lambda$} (a);
+\draw[-{Stealth[length=2mm]},thick] (a) to node[above,lab]{$2\mu$} (b);
+\draw[-{Stealth[length=2mm]},thick] (b) to[bend left=35] node[below,lab]{$2\mu$} (0);
+\draw[lp] (a) to node[above,lab]{$\lambda$} (a); \draw[lp] (b) to node[above,lab]{$\lambda$} (b);
+\end{tikzpicture}
+\end{center}
+Bilancio: $\lambda p_0=2\mu p_{1.2}$ e $2\mu p_{1.1}=\lambda p_0$ $\Rightarrow p_{1.j}=\tfrac{\rho}{k}p_0$ per ogni $j$ (la probabilità si divide in parti uguali fra gli stadi).
+\[
+\Pb=p_{\text{occupato}}=\frac{\rho}{1+\rho}\quad\text{(indipendente da }k\text{: insensibilità)}.
+\]
+
+\subsection{Serventi eterogenei}
+Due serventi $\mu_1>\mu_2$; se sono liberi entrambi l'utente sceglie il più veloce. Stati: $0$, $1.1$ (solo S$_1$ occupato), $1.2$ (solo S$_2$), $2$.
+\begin{center}
+\begin{tikzpicture}[node distance=2.2cm]
+\node[st] (0) at (0,0) {0}; \node[st,minimum size=9mm] (A) at (3,1.2) {1.1}; \node[st,minimum size=9mm] (B) at (3,-1.2) {1.2}; \node[st] (2) at (6,0) {2};
+\draw[fw] (0) to node[above left,lab]{$\lambda$} (A);
+\draw[fw] (A) to node[above right,lab]{$\lambda$} (2);
+\draw[fw] (2) to node[below right,lab]{$\mu_1$} (B);
+\draw[fw] (B) to node[below left,lab]{$\mu_2$} (0);
+\draw[-{Stealth[length=2mm]},thick,bend left=18] (A) to node[above,lab,pos=.35]{$\mu_1$} (0);
+\draw[-{Stealth[length=2mm]},thick,bend left=18] (B) to node[below,lab,pos=.3]{$\lambda$} (2);
+\draw[-{Stealth[length=2mm]},thick,bend left=18] (2) to node[above,lab,pos=.6]{$\mu_2$} (A);
+\end{tikzpicture}
+\end{center}
+Da $2$: finisce S$_1$ (tasso $\mu_1$) $\to$ resta S$_2$ occupato (stato $1.2$); finisce S$_2$ (tasso $\mu_2$) $\to$ resta S$_1$ (stato $1.1$). Da $2$ si esce a $\mu_1+\mu_2$.
+
+\subsection{Servente con vacanze}
+Il servente va in vacanza quando il sistema si svuota e riprende il lavoro solo dopo un certo numero di arrivi. Serve distinguere la fase: $1V$ (un utente, servente in vacanza) e $1L$ (un utente, servente al lavoro).
+\begin{center}
+\begin{tikzpicture}
+\node[st] (0) at (0,0) {0}; \node[st,minimum size=9mm] (V) at (2.4,1.1) {1V}; \node[st,minimum size=9mm] (L) at (2.4,-1.1) {1L};
+\node[st] (2) at (4.8,0) {2}; \node[st] (3) at (6.9,0) {3};
+\draw[-{Stealth[length=2mm]},thick] (0) to node[above left,lab]{$\lambda$} (V);
+\draw[-{Stealth[length=2mm]},thick] (V) to node[above right,lab]{$\lambda$} (2);
+\draw[-{Stealth[length=2mm]},thick] (L) to node[below left,lab]{$\mu$} (0);
+\draw[-{Stealth[length=2mm]},thick] (L) to node[below right,lab]{$\lambda$} (2);
+\draw[-{Stealth[length=2mm]},thick] (2) to node[above,lab,pos=.45]{$\mu$} (L);
+\draw[fw] (2) to node[above,lab]{$\lambda$} (3); \draw[bw] (3) to node[below,lab]{$\mu$} (2);
+\draw[lp] (3) to node[above,lab]{$\lambda$} (3);
+\end{tikzpicture}
+\end{center}
+\begin{attenzione}
+Con vacanze l'\textbf{utilizzo} non è $1-p_0$: in $1V$ il servente è fermo. Utilizzo $=1-(p_0+p_{1V})$, che deve uguagliare $\la/\mu$.
+\end{attenzione}
+
+\subsection{Token bucket / controllore di flusso}
+Pacchetti Poisson $\lambda$, permessi Poisson $\mu$, coda permessi di capacità 1, coda pacchetti di capacità 2, un permesso abilita un pacchetto. \textbf{Una sola catena lineare} che codifica permessi e pacchetti insieme:
+
+\begin{center}
+\begin{tabular}{c|l}
+stato 0 & 1 permesso disponibile (in attesa di un pacchetto)\\
+stato 1 & 0 permessi, nessun pacchetto\\
+stato 2 & 1 pacchetto in attesa del permesso\\
+stato 3 & 2 pacchetti in attesa
+\end{tabular}
+\end{center}
+\begin{center}
+\bdchain{3}{0/{$\lambda$},1/{$\lambda$},2/{$\lambda$}}{1/{$\mu$},2/{$\mu$},3/{$\mu$}}{\draw[lp] (s3) to node[above,lab]{$\lambda$ (perso)} (s3);}
+\end{center}
+Arrivo di pacchetto: sposta a destra. Arrivo di permesso: sposta a sinistra (nello stato 0 il permesso in più è scartato).
+\begin{formula}[Traffico passante e tempo di attesa]
+\begin{align*}
+\text{Throughput}&=\lambda p_0+\mu p_2+\mu p_3 \quad(=\mu(1-p_0)=\lambda(1-p_3))\\
+N&=1\cdot p_2+2\cdot p_3,\qquad T=\frac{N}{\text{Throughput}}
+\end{align*}
+\end{formula}
+Il throughput si ottiene elencando gli eventi che \emph{liberano} un pacchetto: arriva un pacchetto con un permesso (stato 0, tasso $\lambda$) oppure arriva un permesso con pacchetti in attesa (stati 2, 3, tasso $\mu$).
+
+\subsection{Arrivi Erlang: E$_2$|M|1|0}\label{sec:e2m10}
+Interarrivi Erlang-2 (due stadi, ciascuno di tasso $a=2\lambda$), servente esponenziale $\mu$, nessuna coda. Stato $(n,s)$: $n\in\{0,1\}$ utenti, $s\in\{1,2\}$ stadio dell'arrivo.
+\begin{center}
+\begin{tikzpicture}
+\node[st,minimum size=10mm] (01) at (0,1.9) {0,1}; \node[st,minimum size=10mm] (02) at (3.6,1.9) {0,2};
+\node[st,minimum size=10mm] (11) at (0,0) {1,1}; \node[st,minimum size=10mm] (12) at (3.6,0) {1,2};
+\draw[-{Stealth[length=2mm]},thick] (01) to node[above,lab]{$2\lambda$} (02);
+\draw[-{Stealth[length=2mm]},thick] (02) to node[sloped,above,lab,pos=.5]{$2\lambda$ (accettato)} (11);
+\draw[-{Stealth[length=2mm]},thick] (11) to node[below,lab]{$2\lambda$} (12);
+\draw[-{Stealth[length=2mm]},thick,red!70!black] (12) to[bend left=28] node[above,lab,pos=.4]{$2\lambda$ (\emph{perso})} (11);
+\draw[-{Stealth[length=2mm]},thick] (11) to node[left,lab]{$\mu$} (01);
+\draw[-{Stealth[length=2mm]},thick] (12) to node[right,lab]{$\mu$} (02);
+\end{tikzpicture}
+\end{center}
+Con $a=2\lambda$ e $x=p_{11}$: $p_{12}=\tfrac{a}{a+\mu}x$, $p_{01}=\tfrac{\mu}{a}x$, $p_{02}=\tfrac\mu a x+\tfrac{\mu}{a+\mu}x$, $x=\tfrac{a}{2(a+\mu)}$. Gli arrivi si verificano all'uscita dallo stadio 2: blocco condizionato all'arrivo,
+\[
+\Pb=\frac{p_{12}}{p_{02}+p_{12}}=\Big(\frac{2\lambda}{2\lambda+\mu}\Big)^2
+\qquad(\lambda=\mu:\ 4/9).
+\]
+\begin{attenzione}
+\textbf{Non} usare $\Pb=\Pr(\text{occupato})=p_{11}+p_{12}$ (qui $5/9$): gli arrivi non sono Poisson, PASTA non vale.\mio\ (La soluzione ufficiale contiene solo il disegno della catena.)
+\end{attenzione}
+
+%==========================================================
+\section{Esercizi svolti}
+
+\begin{esempio}{Es.~1, 27/05/2020 --- M/M/1/3 con $\lambda=\mu$}
+\textbf{Testo.} Un servente, 2 posti in coda. Si chiedono: stabilità, catena, probabilità stazionarie con $\lambda=\mu$, blocco, $N$, $T$, $W$.
+
+\textbf{Svolgimento.}
+\begin{enumerate}[leftmargin=*,nosep]
+\item Coda finita $\Rightarrow$ stabile per ogni $\lambda,\mu$.
+\item Stato $=$ numero di pacchetti ($0..3$), catena di §\ref{sec:varianti}.
+\item Tagli: $\lambda p_0=\mu p_1,\ \lambda p_1=\mu p_2,\ \lambda p_2=\mu p_3\Rightarrow p_k=\rho^kp_0$. Con $\rho=1$: $p_0=p_1=p_2=p_3=\tfrac14$.
+\item $\Pb=p_3=\tfrac14$.
+\item $N=\tfrac{0+1+2+3}{4}=\tfrac32$.
+\item $\lr=\lambda/4$, $\la=\tfrac34\lambda$. $T=\dfrac{N}{\la}=\dfrac{3/2}{3\lambda/4}=\dfrac{2}{\lambda}=\dfrac2\mu$.
+\item $W=T-\tfrac1\mu=\tfrac1\mu$. Controllo: $\Nq=p_2+2p_3=\tfrac34$, $W=\Nq/\la=\tfrac1\lambda$ \checkmark.
+\end{enumerate}
+\textbf{Controllo.} Utilizzo $1-p_0=\tfrac34=\la/\mu$ \checkmark.
+\end{esempio}
+
+\begin{esempio}{Es.~1, 23/05/2025 --- Token bucket, $\mu=0.5$, $\lambda=2\mu=1$}
+\textbf{Testo.} Controllore di flusso come sopra: modello, stabilità, probabilità con $\lambda=2\mu$, traffico che passa, attesa media.
+
+\textbf{Svolgimento.} Catena lineare a 4 stati (§\ref{sec:varianti}), stabile (code finite). $\rho=\lambda/\mu=2$:
+\[
+p_k=\rho^kp_0,\quad p_0=\frac1{1+2+4+8}=\frac1{15}\ \Rightarrow\ p=\Big(\frac1{15},\frac2{15},\frac4{15},\frac8{15}\Big).
+\]
+\textbf{Throughput} $=\lambda p_0+\mu p_2+\mu p_3=\tfrac{2\mu+4\mu+8\mu}{15}=\tfrac{14}{15}\mu=\tfrac7{15}\lambda$ (controllo: $\lambda(1-p_3)=\tfrac7{15}\lambda$ \checkmark).
+
+\textbf{Attesa}: $N=p_2+2p_3=\tfrac{4+16}{15}=\tfrac43$,\quad $T=\dfrac{N}{\text{Throughput}}=\dfrac{4/3}{7\lambda/15}=\dfrac{20}{7\lambda}\approx2.86$ s (con $\lambda=1$).
+\end{esempio}
+
+\begin{esempio}{06/2005 --- M/M/1/3 con vacanze ($\lambda=\mu$)}
+Servente che va in vacanza quando il sistema si svuota e riparte dopo 2 arrivi; poi lavora fino a svuotare. Catena a 5 stati: $0,1V,1L,2,3$ (§\ref{sec:varianti}).
+
+\textbf{Bilanci.} $\lambda p_0=\mu p_{1L}$; $\lambda p_0=\lambda p_{1V}$; $(\lambda+\mu)p_{1L}=\mu p_2$; $\lambda p_2=\mu p_3$.
+\[
+p_{1L}=\rho p_0,\ p_{1V}=p_0,\ p_2=(1+\rho)\rho\,p_0,\ p_3=(1+\rho)\rho^2p_0,\
+p_0=\frac{1}{2+\rho+(1+\rho)\rho+(1+\rho)\rho^2}.
+\]
+Per $\rho=1$: $(p_0,p_{1V},p_{1L},p_2,p_3)=(1,1,1,2,2)/7$. $N=\tfrac{1+1+4+6}{7}=\tfrac{12}7$; $\la=\lambda(1-p_3)=\tfrac57\lambda$; \% di tempo vuoto $=p_0=\tfrac17$; traffico perso $\lambda p_3=\tfrac27\lambda$; utilizzo $=1-p_0-p_{1V}=\tfrac57=\la/\mu$ \checkmark.
+\end{esempio}
+
+\begin{esempio}{28/05/2008 --- Due serventi eterogenei, $\mu_1=2\mu_2$, $\lambda=\mu_2$}
+Catena a 4 stati (§\ref{sec:varianti}); poniamo $\mu_2=1$, $\mu_1=2$, $\lambda=1$.
+
+\textbf{Bilanci.} Nodo $1.2$: $\mu_1p_2=(\lambda+\mu_2)p_{1.2}\Rightarrow p_{1.2}=p_2$. Taglio $\{2\}$: $\lambda(p_{1.1}+p_{1.2})=(\mu_1+\mu_2)p_2\Rightarrow p_{1.1}+p_{1.2}=3p_2\Rightarrow p_{1.1}=2p_2$. Nodo $0$: $\lambda p_0=\mu_1p_{1.1}+\mu_2p_{1.2}=5p_2$. Normalizzazione: $9p_2=1$.
+\[\begin{gathered}
+p=(p_0,p_{1.1},p_{1.2},p_2)=\Big(\tfrac59,\tfrac29,\tfrac19,\tfrac19\Big),\quad
+\Pb=p_2=\tfrac19,\quad N=\tfrac29+\tfrac19+\tfrac29=\tfrac59,\\
+T=\frac{N}{\lambda(1-\Pb)}=\frac{5/9}{8\lambda/9}=\frac{5}{8\lambda}.
+\end{gathered}\]
+\end{esempio}
+
+\begin{esempio}{15/06/2010 --- M/M/2/3 con $\lambda=\mu$}
+Catena di §\ref{sec:varianti}: $\lambda p_0=\mu p_1,\ \lambda p_1=2\mu p_2,\ \lambda p_2=2\mu p_3\Rightarrow p_1=\rho p_0,\ p_2=\tfrac{\rho^2}2p_0,\ p_3=\tfrac{\rho^3}4p_0$.
+
+Con $\rho=1$: $p=(4,4,2,1)/11$. $\Pb=\tfrac1{11}$; $N=\tfrac{4+4+3}{11}=1$; $\la=\tfrac{10}{11}\lambda$; $T=\dfrac{N}{\la}=\dfrac{11}{10\lambda}$; $W=T-\tfrac1\mu=\dfrac1{10\mu}$. Controllo con la sola coda: $\Nq=1\cdot p_3=\tfrac1{11}$, $W=\Nq/\la=\tfrac1{10\lambda}$ \checkmark.
+\end{esempio}
+
+\begin{esempio}{13/06/2006 --- M/E$_2$/1/1 con $\lambda=\mu$}
+Catena a 3 stati (§\ref{sec:varianti}). $\lambda p_0=2\mu p_{1.2}$, $\lambda p_0=2\mu p_{1.1}$ $\Rightarrow p_{1.1}=p_{1.2}=p_0/2$, quindi $p=(\tfrac12,\tfrac14,\tfrac14)$.
+
+$N=p_{1.1}+p_{1.2}=\tfrac12$; $\lr=\lambda\cdot\tfrac12$, $\la=\tfrac\lambda2$; $T=N/\la=1/\lambda=1/\mu$ e $W=0$ (nessuna coda).
+\end{esempio}
+
+\begin{esempio}{07/2007 --- M/M/2/2 con arrivi scoraggiati $\lambda_n=\lambda/(n+1)$}
+Archi $0\to1$: $\lambda$; $1\to2$: $\lambda/2$; ritorni $\mu,\ 2\mu$. Tagli: $p_1=\rho p_0$, $p_2=\tfrac{\rho^2}{4}p_0$, $p_0=\dfrac{1}{1+\rho+\rho^2/4}$.
+
+\textbf{$\rho_{\max}$ per $\Pb\le0.3$:}
+$\dfrac{\rho^2/4}{1+\rho+\rho^2/4}\le0.3\Rightarrow0.175\rho^2-0.3\rho-0.3\le0\Rightarrow\rho_{\max}=\dfrac{0.3+\sqrt{0.09+0.21}}{0.35}=2.422$.
+
+\textbf{Con $\lambda=\mu/2$ ($\rho=\tfrac12$):} $p=(0.64,\,0.32,\,0.04)$, $\Pb=0.04$, $N=0.32+2\cdot0.04=0.40$.
+\end{esempio}
+
+\begin{esempio}{06/2006 --- M/M/1/2: massimo $\rho$ per $\Pb\le 0.2$}
+$\Pb=p_2=\dfrac{\rho^2}{1+\rho+\rho^2}\le0.2\Rightarrow0.8\rho^2-0.2\rho-0.2\le0\Rightarrow\rho_{\max}=0.6404$.
+Per $\rho=\tfrac13$: $\Pb=\tfrac1{13}$, $N=\tfrac5{13}$.
+\end{esempio}
+
+\begin{esempio}{Es.~4 (esercizio proposto) --- E$_2$|M|1|0 con $\lambda=\mu=1$}
+Catena di §\ref{sec:e2m10} con $a=2$: $x=p_{11}=\tfrac13$, $p_{12}=\tfrac29$, $p_{01}=\tfrac16$, $p_{02}=\tfrac5{18}$.
+$\Pb=\dfrac{2/9}{5/18+2/9}=\tfrac49$; traffico accettato $\lambda(1-\Pb)=\tfrac59=\mu(p_{11}+p_{12})$ \checkmark.\mio
+\end{esempio}
+
+%==========================================================
+\section{Riepilogo risultati dei temi}
+\begin{center}\small
+\begin{tabular}{llll}
+\toprule
+Tema & Sistema & Caso & Risultati\\
+\midrule
+2020 & M/M/1/3 & $\rho=1$ & $p_k=\tfrac14$, $N=\tfrac32$, $T=\tfrac2\mu$\\
+2025 & token bucket & $\rho=2$ & $p=(1,2,4,8)/15$, thr.\ $\tfrac7{15}\lambda$, $T=\tfrac{20}{7\lambda}$\\
+2005-11 & token bucket & $\rho=1$ & $p_k=\tfrac14$, thr.\ $\tfrac34\lambda$, $T=\tfrac1\lambda$\\
+2005-06-01 & vacanze & $\rho=1$ & $p=(1,1,1,2,2)/7$, $N=\tfrac{12}7$\\
+2006-05 & M/M/2/2 & $\rho=\tfrac12$ & $p=(8,4,1)/13$, $N=\tfrac6{13}$, $\lr=\tfrac\lambda{13}$\\
+2006-06-13 & M/E$_2$/1/1 & $\rho=1$ & $p=(\tfrac12,\tfrac14,\tfrac14)$, $N=\tfrac12$\\
+2006-06-27 & M/M/1/2 & $\rho=\tfrac13$ & $\Pb=\tfrac1{13}$, $N=\tfrac5{13}$, $\rho_{\max}=0.640$\\
+2007-05 & scoraggiati M/M/2/2 & $\rho=\tfrac12$ & $\Pb=0.04$, $N=0.4$, $\rho_{\max}=2.422$\\
+2007-06 & M/E$_3$/1/1 & $\rho=\tfrac12$ & $p=(6,1,1,1)/9$, $N=\tfrac13$, $T=\tfrac1\mu$\\
+2008 & eterogenei & $\mu_1{=}2\lambda{=}2\mu_2$ & $p=(5,2,1,1)/9$, $N=\tfrac59$, $T=\tfrac5{8\lambda}$\\
+2009 & M/M/3/3 & $\rho=1$ & $p=(6,6,3,1)/16$, $N=\tfrac{15}{16}$\\
+2010 & M/M/2/3 & $\rho=1$ & $p=(4,4,2,1)/11$, $N=1$, $T=\tfrac{11}{10\lambda}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==========================================================
+\section{Errori frequenti e cosa controllare}
+\begin{attenzione}[Elenco di trappole]
+\begin{enumerate}[leftmargin=*]
+\item Little col $\lambda$ \emph{offerto}: usa $\la=\lambda(1-\Pb)$.
+\item $\Nq$ conta $k-m$ utenti in stato $k\ge m$, \emph{non} $k$ (esempio M/M/1/3: stato 2 $\to$ 1 in coda, stato 3 $\to$ 2).
+\item Dimenticare gli \textbf{autoanelli} del traffico perso: servono a $\lr$.
+\item Con $m$ serventi il tasso di servizio dello stato $k$ è $\min(k,m)\mu$, non sempre $\mu$.
+\item Con servizio Erlang-$k$ ogni stadio ha tasso $k\mu$ (non $\mu$): altrimenti la media cambia.
+\item «Stabile?» con coda finita: \emph{sempre}. Non scrivere $\rho<1$.
+\item Con vacanze o serventi fermi, l'utilizzo non è $1-p_0$.
+\item Non fidarti dei soli numeri: verifica $\sum p=1$ e $\la=\mu\cdot\Pr(\text{occupato})$.
+\item Con arrivi non Poisson (Erlang) il blocco \emph{non} è $\Pr(\text{stato pieno})$.
+\end{enumerate}
+\end{attenzione}

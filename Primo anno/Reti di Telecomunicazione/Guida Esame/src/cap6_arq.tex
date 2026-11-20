@@ -1,0 +1,152 @@
+\chapter{ARQ e lunghezza ottima del pacchetto}\label{cap:arq}
+
+\begin{nota}[Come si riconosce]
+\emph{«Catena di 3 link a 100 kbit/s, messaggio di 10\,000 bit, header di 100 bit: si determini la lunghezza ottima del campo dati e il ritardo minimo»} (esercizio tipo: 2006-06-13, 2007-05-31). Si risolve con \textbf{una sola formula di ritardo} da derivare rispetto a $X$ (§\ref{sec:cap6-pipe}). Gli schemi ARQ (§\ref{sec:cap6-arq}) servono per le domande di teoria e per confrontare l'efficienza $\rho_{\max}$.
+\end{nota}
+
+%==========================================================
+\section{Schemi ARQ: Stop\&Wait, Go-Back-N, Selective Repeat}\label{sec:cap6-arq}
+
+Il mittente è sempre in trasmissione; un frame è ricevuto errato con probabilità $p$ e ritrasmesso finché corretto; la probabilità di errore sugli ACK è trascurata.
+
+\begin{formula}[Definizioni]
+\begin{align*}
+t_I&=\text{tempo di trasmissione del frame},\qquad
+t_{out}\ge 2t_p+t_{proc}+t_{ack}\ \ (\text{time-out}),\\
+t_T&=t_I+t_{out},\qquad a\equiv\frac{t_T}{t_I}\ge1,\qquad
+\rho_{\max}=\lambda_{\max}\,t_I=\frac{t_I}{t_v}
+\end{align*}
+$t_v=$ tempo medio per consegnare correttamente un frame.
+\end{formula}
+\begin{attenzione}
+Qui $a=t_T/t_I$ \textbf{include} $t_I$, quindi $a\ge1$ sempre: non è il solito rapporto $t_{prop}/t_I$.
+\end{attenzione}
+
+\begin{formula}[Efficienza massima]
+\centering\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{llll}
+\toprule
+Schema & $t_v$ & $\rho_{\max}$ & Buffer\\
+\midrule
+Stop\&Wait & $\dfrac{t_T}{1-p}$ & $\dfrac{1-p}{a}$ & TX 1 frame; RX nessuno\\
+Go-Back-N & $t_I\dfrac{1+(a-1)p}{1-p}$ & $\dfrac{1-p}{1+(a-1)p}$ & TX $N$ frame; RX nessuno\\
+Selective Repeat & $\dfrac{t_I}{1-p}$ & $1-p$ & TX $N$; RX di riordino\\
+\bottomrule
+\end{tabular}
+\end{formula}
+
+\textbf{Da dove vengono.} S\&W: ogni tentativo (riuscito o no) costa $t_T$; il numero di tentativi è geometrico di media $\tfrac1{1-p}$, quindi $t_v=t_T\tfrac1{1-p}$, cioè
+\[
+t_v=t_T+(1-p)\sum_{i\ge1}i\,p^i\,t_T=\frac{t_T}{1-p}.
+\]
+GBN: il tentativo riuscito costa $t_I$ (si trasmette di seguito), ogni errore fa perdere $t_T$: $t_v=t_I+t_T\tfrac{p}{1-p}=t_I\tfrac{1+(a-1)p}{1-p}$. SR: si ritrasmette solo il frame errato, $E[\text{tentativi}]=\tfrac1{1-p}$.
+
+\begin{nota}[Come ricordarli]
+\begin{itemize}[nosep]
+\item $a=1$: GBN $\equiv$ S\&W $\equiv$ SR in efficienza ($=1-p$).
+\item SR non dipende da $a$ (propagazione); GBN peggiora con $a$ ma meno di S\&W; S\&W $\propto1/a$.
+\item Esempio numerico\mio\ ($p=0.1$, $a=5$): S\&W $0.18$, GBN $0.643$, SR $0.90$.
+\end{itemize}
+\end{nota}
+
+\textbf{Qualitativo (teoria).} \emph{S\&W}: adatto a half-duplex; numero di sequenza a 1 bit ($SN\in\{0,1\}$) basta, perché l'ambiguità riguarda solo frame consecutivi. \emph{GBN}: finestra $N$; su NACK o time-out del frame $i$ si ritrasmettono $i$ e tutti i successivi già inviati; gli ACK sono cumulativi; il ricevitore scarta i frame fuori sequenza e non ha buffer. \emph{SR}: ritrasmette solo $i$; i frame arrivano fuori ordine, quindi servono buffer a entrambi i lati; è meno usato proprio per questo.
+
+%==========================================================
+\section{Lunghezza ottima del pacchetto (pipelining)}\label{sec:cap6-pipe}
+
+Un messaggio di $L$ bit è spezzato in pacchetti di $X$ bit di dati più $H$ bit di header e inviato su $h$ link in cascata di capacità $C$. Ipotesi: nessun ritardo di propagazione, nessuna perdita, nessuna coda nei nodi.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=0.55cm]
+\foreach \i in {0,1,2} {\draw[thick] (0,-\i*1.2) -- (11.4,-\i*1.2);}
+\node[left,font=\small] at (0,0) {link 1}; \node[left,font=\small] at (0,-1.2) {link 2}; \node[left,font=\small] at (0,-2.4) {link 3};
+\foreach \i in {0,1,2,3} {\fill[cBlu!35,draw=cBlu] (\i*1.6,0.1) rectangle (\i*1.6+1.4,0.9);}
+\foreach \i in {0,1,2,3} {\fill[cBlu!35,draw=cBlu] (\i*1.6+1.6,-1.1) rectangle (\i*1.6+3.0,-0.3);}
+\foreach \i in {0,1,2,3} {\fill[cBlu!35,draw=cBlu] (\i*1.6+3.2,-2.3) rectangle (\i*1.6+4.6,-1.5);}
+\draw[<->,cRosso,thick] (0,1.3) -- (3.2,1.3) node[midway,above,font=\scriptsize,cRosso] {primo pacchetto attraversa $h-1$ link};
+\draw[<->,cVerde,thick] (3.2,-3.0) -- (7.8,-3.0) node[midway,below,font=\scriptsize,cVerde] {tutto il messaggio sull'ultimo link};
+\end{tikzpicture}
+\end{center}
+
+\begin{formula}[Ritardo del messaggio e ottimo]
+\[
+T(X)=\frac{(h-1)(X+H)}{C}+\frac{L}{C}+\Big\lceil\frac LX\Big\rceil\frac HC,\qquad
+\Big\lceil\frac LX\Big\rceil\approx\frac LX+\frac12
+\]
+\[\begin{gathered}
+\frac{dT}{dX}=\frac{h-1}{C}-\frac{LH}{CX^2}=0\ \Longrightarrow\ \boxed{X^*=\sqrt{\frac{L\,H}{h-1}}}\\
+T_{\min}=\frac{(h-1)H+L+\frac H2+2\sqrt{(h-1)LH}}{C}
+\end{gathered}\]
+\end{formula}
+Il primo termine è il tempo del \emph{primo} pacchetto (pieno) per attraversare i primi $h-1$ link; gli altri sono la trasmissione di tutto il messaggio (con header) sull'ultimo link. L'ultimo pacchetto è mediamente mezzo pieno: da qui il $+\tfrac12$.
+
+\begin{procedura}[Passi]
+\begin{enumerate}[leftmargin=*]
+\item Identifica $h$ (numero di \emph{link}, non di nodi), $L$, $H$, $C$.
+\item Scrivi $T(X)$ con l'approssimazione $\lceil L/X\rceil\approx L/X+\tfrac12$; deriva; ottieni $X^*=\sqrt{LH/(h-1)}$.
+\item Calcola $T(X^*)$ (con la formula chiusa o per sostituzione); controlla che $X^*\le L$ (altrimenti un solo pacchetto: $X=L$).
+\item Se richiesto il valore esatto, prova gli interi vicini con il $\lceil\cdot\rceil$ vero.
+\end{enumerate}
+\end{procedura}
+
+\begin{center}
+\begin{tikzpicture}[x=1.15cm,y=3.2cm]
+\draw[->] (0,0) -- (6.1,0) node[right,font=\scriptsize] {$X$}; \draw[->] (0,0) -- (0,1.05) node[above,font=\scriptsize] {$T(X)$};
+\draw[thick,cBlu,domain=0.35:5.6,samples=80,smooth] plot (\x,{(0.02*\x+0.01/\x-0.0175)*10});
+\draw[dashed,cRosso] (0.707,0) -- (0.707,0.108); \node[below,font=\scriptsize,cRosso] at (0.707,0) {$X^*$};
+\node[font=\scriptsize,align=left] at (4.1,0.95) {troppi header\\ a sinistra,\\ poco pipelining\\ a destra};
+\end{tikzpicture}\\[-2pt]
+{\scriptsize Andamento qualitativo ($h=3$, $L=10^4$, $H=100$): ripido per $X$ piccolo, minimo piatto, crescita lenta a destra. Il $\lceil\cdot\rceil$ vero lo rende «a scalini».}
+\end{center}
+
+\begin{attenzione}
+Il ripido a sinistra è l'overhead degli header ($H L/X$); a destra domina il termine $(h-1)X$ (il primo pacchetto è troppo lungo). Con $h=1$ non c'è pipelining ($X=L$ è l'ottimo).
+\end{attenzione}
+
+%==========================================================
+\section{Esercizi svolti}
+
+\begin{esempio}{13/06/2006, Es.~3 --- 3 link da 100 kbit/s}
+\textbf{Dati.} Catena 1-2-3-4: $h=3$, $C=100$ kbit/s, $L=10\,000$ bit, $H=100$ bit.\\
+\textbf{Svolgimento.}
+\[\begin{gathered}
+T(X)=\frac{2(X+H)}{C}+\frac LC+\Big(\frac LX+\frac12\Big)\frac HC,\\
+\frac{dT}{dX}=\frac2C-\frac{LH}{CX^2}=0\Rightarrow X^*=\sqrt{\tfrac{LH}{2}}=\sqrt{500\,000}=707\ \text{bit}.
+\end{gathered}\]
+$T_{\min}=\dfrac{2\cdot807+10\,000+14.14\cdot100+50}{10^5}=0.1308$ s.\\
+\textbf{Verifica esatta\mio}: con $\lceil10\,000/707\rceil=15$ si ha $0.1311$ s; il minimo con il $\lceil\cdot\rceil$ vero è $0.1303$ s (a $X=715$). Generalizzazione: con $h$ hop, $X^*=\sqrt{LH/(h-1)}$.
+\end{esempio}
+
+\begin{esempio}{31/05/2007, Es.~3 --- 2 link da 2 Mbit/s}
+\textbf{Dati.} $h=2$, $C=2$ Mbit/s, $L=20\,000$ bit, $H=400$ bit.\\
+\textbf{Svolgimento.}
+\[\begin{gathered}
+T(X)=\frac{X+H}{C}+\frac LC+\Big(\frac LX+\frac12\Big)\frac HC,\\
+\frac{dT}{dX}=\frac1C-\frac{LH}{CX^2}=0\Rightarrow X^*=\sqrt{LH}=\sqrt{8\cdot10^6}=2828\ \text{bit}.
+\end{gathered}\]
+\textbf{Il valore di $T_{\min}$}: con l'approssimazione $\lceil L/X\rceil\approx L/X+\tfrac12$ si ha $T_{\min}=\dfrac{3228+20\,000+3028}{2\cdot10^6}=0.01313$ s; il professore riporta $0.01321$ s, che è il valore con il $\lceil\cdot\rceil$ \emph{esatto} a $X=2828$: $\lceil20\,000/2828\rceil=8$, quindi $T=\tfrac{3228+20\,000+3200}{2\cdot10^6}$. Non è un errore: sono due modi di valutare lo stesso $X^*$.\mio\ Il minimo assoluto con i $\lceil\cdot\rceil$ veri (calcolato con MATLAB dal professore) è $0.01303$ s a $X=2858$. Nell'esame conta il metodo.
+
+\emph{Punto 1bis}: grafico qualitativo di $T(X)$ come sopra.
+\end{esempio}
+
+%==========================================================
+\section{Riepilogo e trappole}
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+Tema & $h$ & $X^*$ [bit] & $T_{\min}$ (approx.) & esatto\\
+\midrule
+2006-06-13 & 3 & 707 & 0.1308 s & 0.1303 s ($X{=}715$)\\
+2007-05-31 & 2 & 2828 & 0.01313 s (prof.: 0.01321) & 0.01303 s ($X{=}2858$)\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{attenzione}[Elenco di trappole]
+\begin{enumerate}[leftmargin=*]
+\item $h$ è il numero di \emph{link} in cascata, non di nodi: 3 link $\Rightarrow h-1=2$.
+\item Unità coerenti: $L,H,X$ in bit, $C$ in bit/s, $T$ in secondi.
+\item $\lceil a/b\rceil\approx a/b+\tfrac12$ vale \emph{in media}; per un numero esatto usa il $\lceil\cdot\rceil$ vero e prova gli interi vicini a $X^*$.
+\item Se $X^*>L$ il messaggio non va frammentato: $X=L$.
+\item ARQ: $a=t_T/t_I$ (non $t_p/t_I$); S\&W, GBN e SR coincidono per $a=1$; l'efficienza è per un mittente sempre backlogged e senza errori sugli ACK.
+\end{enumerate}
+\end{attenzione}

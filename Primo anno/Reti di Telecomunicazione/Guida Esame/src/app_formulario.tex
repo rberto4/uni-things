@@ -1,0 +1,51 @@
+\chapter{Formulario completo}
+\markboth{Formulario completo}{}
+\small
+\section*{Code e catene di Markov}
+\begin{align*}
+&\text{Taglio: } \lambda_kp_k=\mu_{k+1}p_{k+1},\quad p_n=p_0\prod_{k<n}\tfrac{\lambda_k}{\mu_{k+1}},\quad \textstyle\sum p=1\\
+&N=\sum kp_k,\quad \Nq=\sum_{k>m}(k-m)p_k,\quad \Pb=p_C,\quad \lr=\lambda\Pb,\quad \la=\lambda(1-\Pb)\\
+&N=\la T,\quad \Nq=\la W,\quad T=W+\tfrac1\mu,\quad \la=\mu\cdot\Pr(\text{occupato})\\
+&\text{M/M/1: } p_k=(1-\rho)\rho^k,\ N=\tfrac\rho{1-\rho},\ T=\tfrac1{\mu-\lambda},\ W=\tfrac{\rho}{\mu-\lambda}\\
+&\text{M/M/1/}C\text{: } p_k=\tfrac{(1-\rho)\rho^k}{1-\rho^{C+1}}\ (\rho=1:\ \tfrac1{C+1})\\
+&\text{Erlang B: } p_m=\tfrac{\rho^m/m!}{\sum_{j\le m}\rho^j/j!}\qquad
+\text{M/M/}m\text{/}K:\ p_n=\tfrac{\rho^n}{n!}p_0\ (n\le m),\ \tfrac{\rho^n}{m!\,m^{n-m}}p_0\ (n>m)\\
+&\text{M/G/1: } W=\tfrac{\lambda\overline{x^2}}{2(1-\rho)},\quad \text{Erlang-}k:\ \text{stadi di tasso }k\mu,\quad \text{M/E}_k\text{/1/1: }\Pb=\tfrac{\rho}{1+\rho}\\
+&\text{Token bucket (4 stati): } p_k=\rho^kp_0,\ \text{thr}=\lambda p_0+\mu(p_2+p_3),\ T=\tfrac{p_2+2p_3}{\text{thr}}
+\end{align*}
+
+\section*{Reti e grado di servizio}
+\begin{align*}
+&\mu_i=\tfrac{C_i}{\bar L}\ \text{[pkt/s]},\qquad \lambda_i=\textstyle\sum\text{flussi che usano il link }i,\qquad \gamma=\sum_{ij}\gamma_{ij}\\
+&T^*=\tfrac1\gamma\sum_i\tfrac{\lambda_i}{\mu_i-\lambda_i},\qquad \eta_{\max}=\min_i\tfrac{\mu_i}{\lambda_i},\qquad T^*(\eta\to0)=\tfrac1\gamma\sum_i\tfrac{\lambda_i}{\mu_i}\\
+&\text{2 link: }T(X)=\tfrac1\Lambda\Big[\tfrac{X}{V_1-X}+\tfrac{\Lambda-X}{V_2-\Lambda+X}\Big],\ \ X^*=\tfrac{V_1-k(V_2-\Lambda)}{1+k},\ k=\sqrt{V_1/V_2}\\
+&\text{Potenza M/M/1: }P=\lambda(\mu-\lambda),\ \lambda^*=\tfrac\mu2,\ N^*=1,\ P_{\max}=\tfrac{\mu^2}{4}
+\end{align*}
+
+\section*{Affidabilità e protezione}
+\begin{align*}
+&\text{guasti/anno}=\text{tasso}\cdot\tfrac{L}{1000},\quad \mathrm{MTTF}=\tfrac{8760}{\text{guasti/anno}},\quad A=\tfrac{\mathrm{MTTF}}{\mathrm{MTTF}+\mathrm{MTTR}},\quad U=1-A,\quad \rho=\tfrac{\mathrm{MTTR}}{\mathrm{MTTF}}\\
+&p(n)=\tbinom{N+M}{n}\tfrac{\rho^n}{(1+\rho)^{N+M}},\quad U_{M:N}=\sum_{n=M+1}^{N+M}\tfrac{n-M}{N}p(n),\quad U_{1:1}=\tfrac{\rho^2}{(1+\rho)^2}=(1-A)^2\\
+&U_{1:2}=\tfrac12p_2+p_3,\quad U_{\text{2:1 ded.}}=(1-A)^3,\quad U_s=\tfrac{U\,N-U_GN_G}{N_S}\\
+&\text{Classi: Premium }10^{-5},\ \text{Gold }10^{-4},\ \text{Silver }10^{-3},\ \text{Bronze }10^{-2}\ (\text{unavailability})
+\end{align*}
+
+\section*{Generazione di v.a.}
+\begin{align*}
+&X=F^{-1}(U),\qquad X=a+(b-a)U,\qquad \text{esp. di media }m:\ X=-m\ln U\\
+&\text{pezzo }i\text{ di massa }p_i,\ U\in(c_{i-1},c_i]:\ X=a_i+(U-c_{i-1})\tfrac{b_i-a_i}{p_i};\quad \text{delta: }X=x_i\\
+&\text{geometrica su }\{1,2,..\}:\ X=\Big\lfloor\tfrac{\ln U}{\ln(1-p)}\Big\rfloor+1,\qquad \text{Erlang-}k\text{ (media }\tfrac1\mu):\ X=-\tfrac{1}{k\mu}\ln\textstyle\prod_{i=1}^kU_i\\
+&\text{Box-Muller: }X=\sqrt{-2\ln U_1}\cos2\pi U_2,\ Y=\sqrt{-2\ln U_1}\sin2\pi U_2
+\end{align*}
+
+\section*{ARQ e pacchetto ottimo}
+\begin{align*}
+&t_T=t_I+t_{out},\ a=\tfrac{t_T}{t_I},\quad \rho_{S\&W}=\tfrac{1-p}{a},\quad \rho_{GBN}=\tfrac{1-p}{1+(a-1)p},\quad \rho_{SR}=1-p\\
+&T(X)=\tfrac{(h-1)(X+H)+L+\lceil L/X\rceil H}{C}\ \text{con}\ \lceil\tfrac LX\rceil\approx\tfrac LX+\tfrac12,\qquad X^*=\sqrt{\tfrac{LH}{h-1}}
+\end{align*}
+
+\section*{Simulazione}
+\begin{align*}
+&\bar x\pm u_{1-\alpha/2}\tfrac{s}{\sqrt n}\ (n>30),\ \ \bar x\pm t_{n-1,1-\alpha/2}\tfrac{s}{\sqrt n}\ (n\le30),\qquad X_{n+1}=(aX_n+c)\bmod m
+\end{align*}
+\normalsize

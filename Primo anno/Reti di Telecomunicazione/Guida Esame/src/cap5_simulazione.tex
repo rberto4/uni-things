@@ -1,0 +1,181 @@
+\chapter{Simulazione a eventi}\label{cap:sim}
+
+\begin{nota}[Come si riconosce]
+Domanda per chi ha il corso da 9 CFU (compare nel 2025 e negli esercizi ``Simulazione Sistema Completo''): \emph{``una sorgente ha due stati A e B\dots\ si descrivano gli eventi e il corpo di ogni evento, supponendo di avere il calendario degli eventi e un generatore di numeri casuali''}. La risposta è sempre: \textbf{tipi di evento $+$ inizializzazione $+$ cosa fa ogni evento (cambia lo stato, riprogramma il prossimo)}. Servono anche i generatori di v.a.\ del capitolo sulla generazione di variabili casuali.
+\end{nota}
+
+\newcommand{\sched}[2]{\texttt{schedula(#1,\ t+#2)}}
+\newcommand{\Exp}[1]{\texttt{Exp(#1)}}
+
+%==========================================================
+\section{Teoria minima}
+
+\begin{itemize}
+\item \textbf{Evento}: cambiamento di stato in un istante preciso (durata nulla). \textbf{Attività}: condizione che dura nel tempo; ha un evento di inizio e uno di fine. Esempio: ``servizio'' $=$ evento di inizio $+$ evento di fine servizio.
+\item Serve: tipi di evento e corpo di ciascuno; un \textbf{orologio} (CLOCK); un \textbf{calendario} ordinato per tempo; lo stato iniziale; la raccolta delle misure.
+\item \textbf{Ciclo}: estrai l'evento con tempo minimo $\to$ CLOCK $:=$ tempo dell'evento $\to$ esegui il corpo (aggiorna stato, inserisce nuovi eventi nel calendario, aggiorna le misure) $\to$ ripeti.
+\item Ogni evento ``genera'' il successivo dello stesso tipo: la prima generazione si fa in fase di \textbf{inizializzazione}.
+\item \textbf{Event-driven} (si salta al prossimo evento) contro \textbf{clock-driven} (passi fissi): è una scelta di implementazione e non una proprietà del modello.
+\item Simulazione \emph{statica} (Monte Carlo): il tempo non conta, le osservazioni sono indipendenti. \emph{Dinamica}: tempo centrale, osservazioni correlate, serve la parte di analisi statistica (§\ref{cap5-stat}).
+\end{itemize}
+
+\begin{attenzione}[Errore classico: eventi ``inizio'' e ``fine'' di servizio]
+Non puoi schedulare ``inizio servizio'': coincide con l'arrivo (se il servente è libero) o con la fine del servizio precedente. Si usano solo \textbf{arrivo} e \textbf{fine servizio}, distinguendo i casi.
+\end{attenzione}
+
+%==========================================================
+\section{Esempio guida: coda M/M/1 (4 casi, 2 eventi)}
+
+Stato: numero di utenti $n$ nel sistema. Ingressi: interarrivi e servizi. Uscita: ritardo medio nel sistema. Tipi di evento: \textbf{arrivo} e \textbf{fine servizio}.
+
+\begin{procedura}[Corpo degli eventi]
+\begin{description}[leftmargin=*,nosep]
+\item[Inizializzazione] $n:=0$; \sched{arrivo}{\Exp{$1/\lambda$}}.
+\item[Arrivo] schedula \emph{sempre} il prossimo arrivo: \sched{arrivo}{\Exp{$1/\lambda$}}; memorizza $t_{\text{arr}}$ del pacchetto; poi
+ \begin{itemize}[nosep]
+ \item se $n=0$ (arrivo a sistema vuoto): $n:=1$ e \sched{fine\_servizio}{\Exp{$1/\mu$}};
+ \item se $n>0$: $n:=n+1$ (accoda; se la coda è finita e piena: scarta, conta una perdita).
+ \end{itemize}
+\item[Fine servizio] $n:=n-1$; registra il ritardo $=\text{CLOCK}-t_{\text{arr}}$ del pacchetto uscito; poi
+ \begin{itemize}[nosep]
+ \item se $n>0$ (coda non vuota): \sched{fine\_servizio}{\Exp{$1/\mu$}} (parte il servizio successivo);
+ \item se $n=0$: non fa altro.
+ \end{itemize}
+\end{description}
+\end{procedura}
+Esponenziale di media $m$: $X=-m\ln U$ (con $U$ uniforme in $(0,1)$; $U$ e $1-U$ sono equivalenti).
+
+%==========================================================
+\section{Sorgente a due stati A/B (esercizi tipo)}\label{cap5-sorgente}
+
+Struttura comune: una sorgente alterna due stati A e B con permanenze esponenziali di tassi $\gamma_A,\gamma_B$ (medie $1/\gamma_A$ e $1/\gamma_B$); in ciascuno stato genera pacchetti con regole diverse. \textbf{Tre tipi di evento}: cambio $A\to B$, cambio $B\to A$, generazione pacchetto.
+
+\begin{attenzione}[Quale media?]
+Si esce dallo stato A con tasso $\gamma_A$ $\Rightarrow$ la permanenza in A ha media $1/\gamma_A$. Dopo l'evento $A\to B$ si schedula $B\to A$ dopo una durata di media $1/\gamma_B$ (la durata di B), \textbf{non} $1/\gamma_A$. Per ottenere la probabilità stazionaria dello stato: $\Pr(A)=\dfrac{1/\gamma_A}{1/\gamma_A+1/\gamma_B}$.
+\end{attenzione}
+
+\begin{esempio}{23/05/2025 --- Sorgente con $\gamma_A=2\ \mathrm{s^{-1}}$, $\gamma_B=1\ \mathrm{s^{-1}}$, interarrivi Exp (media 200 ms)}
+\textbf{Dati.} Lunghezza pacchetto $S\sim X_A$ in A e $X_B$ in B (procedure \texttt{sample\_XA()}, \texttt{sample\_XB()} date). Durata A: $1/\gamma_A=0.5$ s; durata B: $1/\gamma_B=1$ s; interarrivo $I=-0.2\ln U$ s.
+
+\textbf{Inizializzazione.} \texttt{Stato:=A}; \sched{A$\to$B}{\Exp{0.5 s}}; \sched{generazione}{\Exp{0.2 s}}.
+\begin{description}[leftmargin=*,nosep]
+\item[Evento A$\to$B] \texttt{Stato:=B}; \sched{B$\to$A}{\Exp{1 s}}, \ie $-\ln U$.
+\item[Evento B$\to$A] \texttt{Stato:=A}; \sched{A$\to$B}{\Exp{0.5 s}}, \ie $-0.5\ln U$.
+\item[Evento generazione] se \texttt{Stato=A}: \texttt{S:=sample\_XA()}, altrimenti \texttt{S:=sample\_XB()}; consegna il pacchetto; \sched{generazione}{\Exp{0.2 s}}.
+\end{description}
+\begin{attenzione}[Errore nella soluzione ufficiale 2025]
+La soluzione stampata schedula $B\to A$ con media $0.5$ s e $A\to B$ con media $1$ s: le due medie sono \textbf{scambiate}. Quella corretta è sopra; la soluzione ufficiale di ``Simulazione Sistema Completo~1'' è corretta.
+\end{attenzione}
+\end{esempio}
+
+\begin{esempio}{Simulazione Sistema Completo 1 --- $\gamma_A=2$, $\gamma_B=1$, interarrivi Exp (100 ms)}
+\textbf{Dati.} Stato A: lunghezza con densità $f_A(x)=\dfrac1{x+1}$ su $[0,e-1]$. Stato B: lunghezza discreta $100\,(0.4)$, $500\,(0.1)$, $800\,(0.1)$, $1000\,(0.1)$, $10\,000\,(0.3)$ bit.
+
+\textbf{a) Generatore per A (inversione).} $F_A(x)=\ln(x+1)$, $F_A^{-1}(y)=e^y-1$:\quad \texttt{U:=rand(); S:=}$e^{U}-1$.
+
+\textbf{b) Generatore per B (discreto a cumulate).} Cumulate $d_k=0.4,\ 0.5,\ 0.6,\ 0.7,\ 1.0$:
+\begin{quote}\ttfamily\small
+U:=rand(); i:=1; S:=s$_1$;\\
+while (U > d$_i$) \{ S:=s$_{i+1}$; i:=i+1 \}\\
+return S
+\end{quote}
+\textbf{c) Eventi.} Inizializzazione: \texttt{Stato:=A}; \sched{A$\to$B}{\Exp{500 ms}}; \sched{generazione}{\Exp{100 ms}}.
+\begin{description}[leftmargin=*,nosep]
+\item[A$\to$B] \texttt{Stato:=B}; \sched{B$\to$A}{\Exp{1 s}}.
+\item[B$\to$A] \texttt{Stato:=A}; \sched{A$\to$B}{\Exp{500 ms}}.
+\item[Generazione] lunghezza con a) o b) secondo lo stato; \sched{generazione}{\Exp{100 ms}}.
+\end{description}
+\end{esempio}
+
+\begin{esempio}{Compitino 19/12/2002 (Sistema Completo 2) --- interarrivi non esponenziali e canale rumoroso}
+\textbf{Dati.} $\gamma_A=8$, $\gamma_B=5\ \mathrm{s^{-1}}$. Stato A: interarrivo $I_A$ (ms) con densità $1/x^2$ per $x\ge1$; lunghezza $L_A$ con densità $1/900$ su $[100,400]$, $1/1800$ su $[400,700]$ e un impulso di peso $\tfrac12$ in $1000$. Stato B: interarrivo costante 4 ms, lunghezza costante 1000 bit. Il canale segna ERRATO un pacchetto con probabilità $P=0.01$.
+
+\textbf{a) $I_A$.} $F(x)=1-\tfrac1x$ ($x\ge1$) $\Rightarrow I_A=\dfrac1{1-U}$ (si può scrivere $1/U$). È una Pareto con media infinita.
+
+\textbf{b) $L_A$.} Masse: $\tfrac13,\ \tfrac16,\ \tfrac12$.
+\begin{quote}\ttfamily\small
+U:=rand();\\
+if U < 1/3: L:=900*U+100\\
+else if U < 1/2: L:=1800*U-200\\
+else: L:=1000
+\end{quote}
+(controllo: $U=\tfrac13\to400$; $U=\tfrac12\to700$).
+
+\textbf{c) Cambi di stato.} Durate $\texttt{Durata\_A}=-\tfrac18\ln U$ (media 125 ms), $\texttt{Durata\_B}=-\tfrac15\ln U$ (media 200 ms). Inizializzazione: \texttt{Stato:=A}; \sched{A$\to$B}{Durata\_A}. $A\to B$: \texttt{Stato:=B}; \sched{B$\to$A}{Durata\_B}. $B\to A$: \texttt{Stato:=A}; \sched{A$\to$B}{Durata\_A}.
+
+\textbf{d) Generazione e canale.} Inizializzazione: schedula la prima \texttt{generazione\_pacchetto}. Corpo:
+\begin{itemize}[nosep]
+\item se \texttt{Stato=A}: $L:=$ generatore b); prossimo evento tra $I_A$ (generatore a));
+\item se \texttt{Stato=B}: $L:=1000$; prossimo evento tra 4 ms;
+\item in entrambi i casi: \texttt{U:=rand(); if U<0.01: pacchetto ERRATO}.
+\end{itemize}
+\end{esempio}
+
+\begin{nota}[Schema di risposta in 4 righe]
+(1)~elenca i tipi di evento; (2)~durate/interarrivi con la formula $-m\ln U$ (media $m$ giusta!); (3)~inizializzazione: stato, primo cambio di stato, prima generazione; (4)~corpo di ogni evento: aggiorna lo stato, chiama il generatore corretto, \textbf{riprogramma} il successivo. Se compare un canale con errori è un'estrazione $U<P$ in più per pacchetto.
+\end{nota}
+
+%==========================================================
+\section{Numeri pseudocasuali}
+
+\textbf{Generatore lineare congruente (Lehmer).}
+\begin{formula}
+\[
+X_{n+1}=(aX_n+c)\bmod m,\qquad R_n=\frac{X_n}{m}\in[0,1),\qquad X_n=\Big(a^nX_0+\frac{a^n-1}{a-1}\,c\Big)\bmod m
+\]
+\end{formula}
+Moltiplicativo se $c=0$, misto se $c\ne0$. Il \textbf{periodo} $p\le m$ è il primo $p$ con $X_p=X_0$; $p=m$ significa periodo pieno. Con $m=2^b$ il modulo è un troncamento ai $b$ bit; il moltiplicativo ha periodo massimo $2^{b-2}$ ($b\ge4$).
+
+\begin{esempio}{Esempio delle slide: $X_0=a=c=7$, $m=10$}
+$X_1=7\cdot7+7=56\to6$; $X_2=6\cdot7+7=49\to9$; $X_3=9\cdot7+7=70\to0$; $X_4=0+7=7=X_0$.
+Sequenza $7,6,9,0,7,6,9,0,\dots$ \quad $\Rightarrow$ periodo $p=4<m=10$ (non è pieno).
+\end{esempio}
+
+\textbf{Test statistici.}
+\begin{itemize}
+\item \textbf{$\chi^2$ di uniformità}: $k$ classi, $\hat Y_i$ osservate, $Y_i=n p_i$ attese ($p_i=1/k$): $V=\sum_i\dfrac{(\hat Y_i-Y_i)^2}{Y_i}$, distribuita $\chi^2$ con $k-1$ gradi di libertà. Giudizio per percentile: $<1\%$ o $>99\%$ rifiuta; $1$--$5\%$ e $95$--$99\%$ sospetto.
+\item \textbf{Gap test}: si definisce un evento di probabilità $p$ (es.\ $U>$ soglia), si scrive la sequenza 0/1 e si guardano le lunghezze delle sequenze di 0 e di 1, che devono essere geometriche; si confrontano le medie con $1/p$ e $1/(1-p)$.
+\end{itemize}
+
+%==========================================================
+\section{Analisi statistica dei risultati}\label{cap5-stat}
+
+\subsection{Intervallo di confidenza della media}
+Con $n$ osservazioni \textbf{indipendenti}: $\bar x=\tfrac1n\sum x_i$, $\E[\bar x]=\eta$, $\sigma^2(\bar x)=\sigma^2/n$.
+\begin{formula}[Intervalli di confidenza al livello $1-\alpha$]
+\begin{align*}
+\sigma\text{ nota (o }n>30\text{):}\quad & \bar x\pm u_{1-\alpha/2}\frac{\sigma}{\sqrt n},\qquad u_{0.975}=1.96\ (95\%)\\
+\sigma\text{ ignota:}\quad & \bar x\pm t_{n-1,\,1-\alpha/2}\frac{s}{\sqrt n},\qquad s^2=\frac1{n-1}\sum_i(x_i-\bar x)^2
+\end{align*}
+\end{formula}
+Il rapporto $\dfrac{\bar x-\eta}{s/\sqrt n}$ segue una \textbf{t-Student con $n-1$ gradi di libertà}; per $n>30$ si approssima con la normale. Nelle simulazioni temporali $n$ è spesso piccolo $\Rightarrow$ usa la t.
+
+\begin{esempio}{Numero guida: $n=10$ repliche, $\bar x=12.4$, $s=2.1$, livello 95\%}
+$t_{9,\,0.975}=2.262$: semi-ampiezza $2.262\cdot\dfrac{2.1}{\sqrt{10}}=1.50$, intervallo $[10.9,\ 13.9]$. Con la normale (errata qui) si avrebbe $1.96\cdot0.664=1.30$: intervallo troppo stretto.
+\end{esempio}
+Operazioni sugli intervalli: $\Pr\{Ax_l+B\le Ax+B\le Ax_u+B\}=1-\alpha$; per la differenza $x-y$ il livello scende ad almeno $1-\alpha_x-\alpha_y$ (estremi $x_l-y_u$ e $x_u-y_l$). Per la varianza: $\sigma^2=\E[x^2]-\E^2[x]$, con intervalli separati per le medie di $x$ e di $x^2$.
+
+\subsection{Osservazioni correlate}
+In una simulazione temporale le osservazioni successive sono \textbf{correlate}: lo stimatore resta corretto ma
+\[
+\sigma^2(\bar x)=\frac{\sigma^2}{n}\Big\{1+2\sum_{k=1}^{n-1}\Big(1-\frac kn\Big)\rho_k\Big\},\qquad\rho_k=\frac{\E[(x_i-\eta)(x_{i+k}-\eta)]}{\sigma^2}\quad(\text{autocorrelazione}).
+\]
+Non conoscendo $\rho_k$ si costruiscono campioni indipendenti:
+\begin{itemize}
+\item \textbf{Repliche indipendenti}: $N$ simulazioni con generatori/semi diversi; le $N$ stime di ciascuna sono i campioni indipendenti. È la generalizzazione del Monte Carlo.
+\item \textbf{Batch means}: una sola run lunga divisa in $N$ blocchi di $K$ osservazioni; per $K$ grande le medie dei blocchi sono (approssimativamente) indipendenti.
+\item \textbf{Punti di rigenerazione}: istanti in cui il processo ritorna nello stesso stato (es.\ un arrivo a sistema vuoto in G/G/1); gli intervalli tra due rigenerazioni sono indipendenti.
+\end{itemize}
+
+\subsection{Transiente (warm-up)}
+Lo stato iniziale (es.\ sistema vuoto) distorce le statistiche iniziali. Si scarta l'intervallo iniziale; non esiste una regola esatta: in teoria finché l'autocorrelazione diventa trascurabile, in pratica a tentativi o iniziando da uno stato di rigenerazione. Il transiente si allunga al crescere di $\rho\to1$.
+
+\begin{attenzione}[Checklist dei punti di attenzione]
+\begin{itemize}[nosep]
+\item Distingui media $m$ e tasso $\lambda$: l'esponenziale di tasso $\lambda$ è $-\tfrac1\lambda\ln U$.
+\item Ogni evento deve riprogrammare il successivo; se manca, la simulazione si ferma.
+\item Se si usa il ritardo, memorizza il tempo di arrivo \emph{di ciascun} pacchetto.
+\item Intervalli di confidenza con $n\le30$ e $\sigma$ ignota: t-Student, non normale.
+\item Scarta il transiente e usa campioni indipendenti (repliche o batch).
+\end{itemize}
+\end{attenzione}

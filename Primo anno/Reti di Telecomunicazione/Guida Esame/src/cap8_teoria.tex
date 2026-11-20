@@ -1,0 +1,116 @@
+\chapter{Domande di teoria ricorrenti}\label{cap:teoria}
+
+\begin{nota}[Come si usa]
+Ogni tema ha 1--2 domande di teoria, quasi sempre le stesse. Ogni sezione è scritta come \textbf{risposta da scritto} (5--12 righe): enunciato, idea, formula chiave. Le prime due (Little con la prova di Stidham e Burke) sono ricorrenti in \emph{quasi tutti} i temi: sappile a memoria.
+\end{nota}
+
+%==========================================================
+\section{Teorema di Little e dimostrazione di Stidham}
+\textbf{Enunciato.} Per un sistema stabile in regime, con $\lambda$ tasso medio di ingresso, $N$ numero medio di utenti nel sistema e $T$ tempo medio di permanenza:
+\[
+N=\lambda\,T .
+\]
+Vale per qualunque sistema (intero, solo coda, solo servente) e per qualunque distribuzione di arrivi, servizi e disciplina di servizio. In un sistema a perdita $\lambda$ è il traffico \emph{accettato}.
+
+\textbf{Prova (Stidham, slide 40).} Si immagina che ogni utente paghi 1 euro per unità di tempo trascorsa nel sistema. Si calcola l'incasso medio per unità di tempo in due modi:
+\begin{enumerate}[nosep]
+\item guardando il sistema: in ogni istante ci sono mediamente $N$ utenti presenti, ciascuno paga 1 al secondo, quindi l'incasso medio è $N$;
+\item guardando gli utenti: ne arrivano $\lambda$ al secondo e ciascuno paga in totale (in media) $T$ euro; l'incasso, contabilizzato all'ingresso (o all'uscita), è $\lambda T$.
+\end{enumerate}
+È lo stesso incasso contato in due modi, quindi $N=\lambda T$. \hfill$\square$
+
+\textbf{Applicazioni citate:} $T=N/\Lambda$ per una rete con $\Lambda=\sum\lambda_i$ esterno, indipendentemente da lunghezza dei pacchetti, interarrivi e instradamento; controllo a finestra ($N=\lambda T$: se $T$ cresce per la congestione, $\lambda$ deve calare); $K$ serventi sempre saturi: $T=N\bar X/K$.
+
+%==========================================================
+\section{Teorema di Burke e sua utilità}
+\textbf{Enunciato.} Per una coda M/M/1 (anche M/M/$m$, M/M/$\infty$) in regime con arrivi Poisson di tasso $\lambda$, \textbf{il processo delle partenze è Poisson di tasso $\lambda$} (qualunque sia la disciplina di coda).
+
+\textbf{Prova per M/M/1 (slide 53).} Subito dopo una partenza il sistema è occupato con prob.\ $\rho$ oppure vuoto con prob.\ $1-\rho$. Nel primo caso l'intervallo alla partenza successiva è Exp($\mu$); nel secondo è la somma di Exp($\lambda$) (attesa dell'arrivo) e Exp($\mu$) (servizio). Trasformata di Laplace dell'intervallo:
+\[
+\rho\frac{\mu}{\mu+s}+(1-\rho)\frac{\mu}{\mu+s}\frac{\lambda}{\lambda+s}
+=\frac{\mu}{\mu+s}\cdot\frac{\lambda+\rho s}{\lambda+s}
+=\frac{\lambda}{\lambda+s},
+\]
+cioè proprio la trasformata di un'esponenziale di tasso $\lambda$.
+
+\textbf{Utilità.} In una \emph{cascata} o rete di code l'uscita di ogni nodo è Poisson: ogni coda si può studiare come un M/M/1 indipendente con ingresso $\lambda_i$ (base del teorema di Jackson e del calcolo di $T^*$). Con partizioni casuali e somme di flussi Poisson indipendenti restano Poisson. Precisazione: i \emph{tempi di servizio} nei vari nodi non sono davvero indipendenti (un messaggio lungo è lungo ovunque): da qui l'approssimazione di Kleinrock.
+
+%==========================================================
+\section{Reti di Jackson e approssimazione di Kleinrock}
+\textbf{Jackson.} Rete aperta di $M$ nodi con arrivi esterni Poisson, servizio esponenziale (tasso $\mu_i$), instradamento casuale indipendente dalla storia. Detti $\lambda_i$ i tassi di arrivo ai nodi (dalle equazioni di continuità dei flussi), in regime:
+\[
+p(n_1,\dots,n_M)=\prod_{i=1}^Mp_i(n_i),\qquad p_i(n_i)=(1-\rho_i)\rho_i^{n_i},\quad\rho_i=\frac{\lambda_i}{\mu_i}<1 .
+\]
+Ogni nodo si comporta come un M/M/1 indipendente; la rete influisce solo sui valori $\rho_i$. \textbf{Kleinrock}: nelle reti di dati reali, dove molti flussi si mescolano in ogni nodo, la correlazione fra i tempi di servizio nei diversi nodi si attenua e l'ipotesi di indipendenza è ragionevole; ne segue $T^*=\frac1\gamma\sum_i\frac{\lambda_i}{\mu_i-\lambda_i}$ (cap.~2).
+
+%==========================================================
+\section{Flooding}
+Ogni nodo ritrasmette ogni pacchetto ricevuto su \textbf{tutti} i link uscenti tranne quello di ingresso. Per evitare circolazioni infinite servono un identificatore del pacchetto (scartare i duplicati) oppure un contatore di salti.
+\begin{itemize}[nosep]
+\item \textbf{Vantaggi}: massima affidabilità (prova tutti i percorsi, quindi anche il più breve), nessuna tabella di instradamento, nessuna conoscenza della topologia.
+\item \textbf{Svantaggi}: traffico enorme, ritardo e congestione elevati, molte copie duplicate.
+\item \textbf{Usi}: diffusione di messaggi a tutti i nodi (broadcast, annunci di stato dei link nel link-state), reti militari o con topologia molto instabile. Varianti: flooding selettivo, flooding su albero ricoprente.
+\end{itemize}
+
+%==========================================================
+\section{Channel Queue Limit (CQL)}
+Controllo di congestione a livello di nodo: limita la lunghezza della coda di ciascun canale di uscita. Previene il \textbf{deadlock diretto} (buffer pieni di traffico reciproco) e l'ingiustizia (un canale veloce che occupa tutti i buffer). Con $B$ buffer totali e $N$ code, $n_i$ pacchetti nella coda $i$:
+\begin{itemize}[nosep]
+\item \textbf{partizione completa}: $0\le n_i\le B/N$ (ogni coda è un M/M/1/$C$ con $C=B/N$): stabile ma poco efficiente a basso carico;
+\item \textbf{partizione limitata}: $0\le n_i\le b_M$ con $b_M>B/N$ e $\sum n_i\le B$;
+\item \textbf{con buffer minimo}: ogni coda ha riservati $b_m<B/N$ posti, il resto è condiviso;
+\item \textbf{euristica}: $b_M\approx B/\sqrt N$ (ottimo approssimato, curva del traffico smaltito vicina al massimo). La slide stampa $\sqrt{B/N}$: vedi errata.
+\end{itemize}
+Con la partizione non controllata il traffico smaltito crolla ad alto carico (zona di instabilità); il CQL con $b_M$ ottimale lo mantiene vicino al massimo.
+
+%==========================================================
+\section{Flow deviation (instradamento ottimo)}
+Problema: assegnare i flussi ai cammini minimizzando il ritardo medio (assegnazione ottima dei flussi; programmazione convessa, poco efficiente in generale).
+\textbf{Metodo} (slide 64--66): partendo da un instradamento ammissibile, ripetere
+\begin{enumerate}[nosep]
+\item assegna a ogni link la \textbf{lunghezza} $\ell_i=\dfrac{\partial T_i}{\partial\lambda_i}$; con l'approssimazione M/M/1, $T_i=\dfrac1{\mu_i-\lambda_i}$ e $\ell_i=\dfrac1{(\mu_i-\lambda_i)^2}$ (per il ritardo \emph{totale} $\lambda_iT_i$ si ottiene $\mu_i/(\mu_i-\lambda_i)^2$\mio);
+\item calcola i cammini minimi per tutte le coppie con queste lunghezze (Dijkstra);
+\item devia una frazione $\alpha$ del flusso $f_{ij}$ sul cammino minimo (scelta di $\alpha$ per minimizzare $T$ lungo la direzione di deviazione);
+\end{enumerate}
+fino a quando due cammini di una stessa coppia hanno la stessa pendenza delle curve di ritardo (condizione di ottimo). Le deviazioni devono essere piccole per evitare oscillazioni/instabilità. Il minimo per due link paralleli è la condizione $\tfrac{V_1}{(V_1-X)^2}=\tfrac{V_2}{(V_2-\Lambda+X)^2}$ (cap.~2).
+
+%==========================================================
+\section{Metodo di Von Neumann (rejection)}\mio
+Per generare $X$ con densità $f(x)$ limitata, con $f(x)\le c\,g(x)$ dove $g$ è una densità facile da campionare:
+\begin{enumerate}[nosep]
+\item genera $Y\sim g$ e $U\sim U(0,1)$;
+\item se $U\le\dfrac{f(Y)}{c\,g(Y)}$ accetta $X=Y$; altrimenti ripeti.
+\end{enumerate}
+La probabilità di accettazione è $1/c$, il numero medio di tentativi è $c$. Caso più comune, $f$ limitata da $M$ su $[a,b]$: $Y=a+(b-a)U_1$, accetta se $M\,U_2\le f(Y)$ (si lancia un punto uniforme nel rettangolo e si tiene se cade sotto la curva). Si usa quando $F$ non è invertibile (es.\ gaussiana, densità complesse); è inefficiente se $c$ è grande.
+
+%==========================================================
+\section{Albero dei cammini minimi vs albero di costo minimo}
+\begin{itemize}[nosep]
+\item \textbf{Albero dei cammini minimi (SPT)} dalla radice $s$: contiene per ogni nodo il cammino di lunghezza minima da $s$. \textbf{Dijkstra} ($O(n^2)$, lunghezze $\ge0$): etichetta permanente $u_1=0$, etichette provvisorie $u_j=l_{1j}$; ripetere: rendi permanente il nodo con etichetta provvisoria minima $k$ e aggiorna $u_j=\min(u_j,u_k+a_{kj})$. \textbf{Bellman--Ford} ($O(n^3)$ centralizzato, lunghezze anche negative senza cicli negativi): $D_i^{(h+1)}=\min\big[D_i^{(h)},\min_j(D_j^{(h)}+d_{ji})\big]$, termina in $N-1$ passi; è la base del distance-vector (esecuzione distribuita).
+\item \textbf{Albero di costo minimo (MST)}: albero ricoprente di peso totale minimo, indipendente dalla radice. \textbf{Kruskal} (ordina gli archi, aggiungi se non chiude un ciclo), \textbf{Prim} (cresce da una radice scegliendo l'arco più corto del taglio), Sollin. Per il massimo: pesi cambiati di segno.
+\end{itemize}
+\textbf{Sono diversi.} Esempio: nodi $A,B,C$ con $AB=1$, $BC=1$, $AC=1.5$. SPT da $A$: archi $AB$ e $AC$ (distanza a $C$ $=1.5<2$), peso totale $2.5$. MST: archi $AB$ e $BC$, peso $2$. L'SPT minimizza le \emph{distanze dalla radice}; l'MST minimizza il \emph{costo totale} dell'albero (utile per broadcast a basso costo, non per i ritardi).
+
+%==========================================================
+\section{Protezione dedicata (1+1, 1:1) vs condivisa (1:N)}
+\begin{itemize}[nosep]
+\item \textbf{1+1}: il segnale è trasmesso \emph{contemporaneamente} su cammino di lavoro e di protezione (link-disgiunti); il ricevitore sceglie il migliore. Recupero istantaneo, 100\% di ridondanza.
+\item \textbf{1:1}: il cammino di protezione è riservato ma non trasporta traffico (o solo a bassa priorità) finché non c'è un guasto; serve un'attivazione/commutazione. Disponibilità $A_{1:1}=1-(1-A)^2$ ($U=(1-A)^2$).
+\item \textbf{1:N} (condivisa): un solo cammino di protezione condiviso da $N$ cammini di lavoro. Meno risorse (ridondanza $1/N$); si perde protezione se ci sono \emph{due o più guasti contemporanei}.
+\begin{equation*}
+p(n)=\binom{N+1}{n}\frac{\rho^n}{(1+\rho)^{N+1}},\qquad U=\sum_{n=2}^{N+1}\frac{n-1}{N}\,p(n),\qquad\rho=\frac{\mathrm{MTTR}}{\mathrm{MTTF}}.
+\end{equation*}
+\item Con \textbf{priorità} (Gold preleva il backup prima di Silver) $U_G$ è quello di un 1:$N_G$ e $U_S=\dfrac{U\,N-U_GN_G}{N_S}$: si può soddisfare Gold ($99.99\%$) con un solo backup condiviso.
+\end{itemize}
+
+%==========================================================
+\section{M/G/1: derivazione di Pollaczek--Khinchin}
+Ipotesi: arrivi Poisson $\lambda$, servizio generale di media $\bar x$ e momento secondo $\overline{x^2}$, $\rho=\lambda\bar x<1$, disciplina indipendente dal tempo di servizio richiesto. Il ritardo di coda dell'$i$-esimo utente è
+\[
+W_i=R_i+\sum_{j=i-N_i}^{i-1}x_j ,
+\]
+con $R_i$ tempo residuo di servizio dell'utente in servizio all'arrivo e $N_i$ numero di utenti in coda. Passando alle medie e usando Little sulla coda ($\Nq=\lambda W$): $W=R+\bar x\,\Nq=R+\rho W\Rightarrow W=\dfrac{R}{1-\rho}$. La media del residuo è l'area dei triangoli $r(t)$ nel tempo: $R=\tfrac12\lambda\overline{x^2}$. Quindi
+\[
+W=\frac{\lambda\,\overline{x^2}}{2(1-\rho)},\qquad T=\bar x+W,\qquad N=\lambda T .
+\]
+M/M/1: $\overline{x^2}=2/\mu^2\Rightarrow W=\frac{\rho}{\mu-\lambda}$. M/D/1: $\overline{x^2}=1/\mu^2\Rightarrow W$ dimezzato (minimo fra gli M/G/1 con stessi $\lambda,\mu$). $W=\infty$ se $\overline{x^2}=\infty$, anche con $\rho<1$.

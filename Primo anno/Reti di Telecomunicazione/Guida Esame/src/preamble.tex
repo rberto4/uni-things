@@ -1,0 +1,86 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[italian]{babel}
+\usepackage{fontspec}
+\usepackage[margin=2.3cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,array,tabularx,enumitem,multicol,xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[hidelinks,bookmarksnumbered]{hyperref}
+
+\definecolor{cBlu}{HTML}{1F4E79}
+\definecolor{cRosso}{HTML}{B03A2E}
+\definecolor{cVerde}{HTML}{1E7B4B}
+\definecolor{cGrigio}{HTML}{F2F2F2}
+\definecolor{cArancio}{HTML}{B9770E}
+
+\setlist{itemsep=2pt,topsep=3pt,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\renewcommand{\arraystretch}{1.18}
+
+\titleformat{\chapter}[hang]{\Large\bfseries\color{cBlu}}{\thechapter.}{0.6em}{}
+\titlespacing*{\chapter}{0pt}{-10pt}{14pt}
+\titleformat{\section}{\large\bfseries\color{cBlu}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\leftmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ---- ambienti ----
+\newtcolorbox{formula}[1][]{enhanced,breakable,colback=cGrigio,colframe=cBlu,boxrule=0.6pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,title={#1},fonttitle=\bfseries\small,
+  coltitle=cBlu,attach boxed title to top left={yshift=-2mm,xshift=3mm},
+  boxed title style={colback=white,colframe=cBlu,boxrule=0.4pt,sharp corners},
+  sharp corners}
+\newtcolorbox{attenzione}[1][Attenzione]{enhanced,breakable,colback=red!4,colframe=cRosso,boxrule=0.6pt,
+  left=6pt,right=6pt,top=3pt,bottom=3pt,title={#1},fonttitle=\bfseries\small,coltitle=cRosso,
+  attach boxed title to top left={yshift=-2mm,xshift=3mm},
+  boxed title style={colback=white,colframe=cRosso,boxrule=0.4pt,sharp corners},sharp corners}
+\newtcolorbox{nota}[1][Tip]{enhanced,breakable,colback=green!4,colframe=cVerde,boxrule=0.6pt,
+  left=6pt,right=6pt,top=3pt,bottom=3pt,title={#1},fonttitle=\bfseries\small,coltitle=cVerde,
+  attach boxed title to top left={yshift=-2mm,xshift=3mm},
+  boxed title style={colback=white,colframe=cVerde,boxrule=0.4pt,sharp corners},sharp corners}
+\newtcolorbox{procedura}[1][Procedura]{enhanced,breakable,colback=white,colframe=cArancio,boxrule=0.6pt,
+  left=6pt,right=6pt,top=3pt,bottom=3pt,title={#1},fonttitle=\bfseries\small,coltitle=cArancio,
+  attach boxed title to top left={yshift=-2mm,xshift=3mm},
+  boxed title style={colback=white,colframe=cArancio,boxrule=0.4pt,sharp corners},sharp corners}
+\newtcolorbox{esempio}[1]{enhanced,breakable,colback=white,colframe=black!55,boxrule=0.5pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,title={#1},fonttitle=\bfseries\small,
+  colbacktitle=black!8,coltitle=black,sharp corners,toptitle=2pt,bottomtitle=2pt}
+
+% ---- macro matematiche ----
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\Pr}{\mathrm{P}}
+\newcommand{\Pb}{P_{\mathrm{b}}}
+\newcommand{\la}{\lambda_{\mathrm{a}}}
+\newcommand{\lr}{\lambda_{\mathrm{r}}}
+\newcommand{\Nq}{N_{\mathrm{q}}}
+\newcommand{\ie}{\emph{i.e.}\ }
+\newcommand{\mio}{\textsuperscript{\textcolor{cArancio}{[m]}}}
+
+% ---- catene di Markov in TikZ ----
+\tikzset{
+  st/.style={circle,draw,thick,minimum size=7.5mm,inner sep=0pt,font=\small},
+  fw/.style={-{Stealth[length=2mm]},thick,bend left=18},
+  bw/.style={-{Stealth[length=2mm]},thick,bend left=18},
+  lp/.style={-{Stealth[length=2mm]},thick,red!70!black,loop above,looseness=6,min distance=5mm},
+  lab/.style={font=\scriptsize,inner sep=1pt},
+}
+
+% catena nascita-morte: #1 ultimo stato, #2 lista i/etichetta archi su, #3 lista i/etichetta archi giu, #4 codice extra
+\newcommand{\bdchain}[4]{%
+\begin{tikzpicture}[baseline]
+ \foreach \i in {0,...,#1} \node[st] (s\i) at (1.9*\i,0) {\i};
+ \foreach \i/\l in {#2} {\pgfmathtruncatemacro{\j}{\i+1}\draw[fw] (s\i) to node[above,lab]{\l} (s\j);}
+ \foreach \i/\l in {#3} {\pgfmathtruncatemacro{\j}{\i-1}\draw[bw] (s\i) to node[below,lab]{\l} (s\j);}
+ #4
+\end{tikzpicture}}
