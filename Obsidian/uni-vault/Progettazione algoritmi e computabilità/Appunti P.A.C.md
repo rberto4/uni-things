@@ -59,6 +59,18 @@ Analisi teorica con :
 #### A costo uniforme
 Ogni istruzione consuma una unità di tempo e richiede una unità di spazio
 E' un approccio semplice ma poco efficiente e veritiero.
+
+#### Modello a costo logaritmico
 La complessità è proporzionale al numero di bit dell'operando e l'accesso è proporzionale al numero di bit dell'indirizzo
+- Un intero n ha costo $O(log(n))$
+- L'accesso ad un registro i ha costo $O(log(i))$
 
+limitiamo a $c*Log(n)$ la dimensione dei numeri interi rappresentabili , con 
+- c costante
+- n e' la dimensione dell'input del problema
 
+Gli algoritmi che presentiamo possono essere implementati su macchine a registri con interi di dimensione $<= nˆ{c}$
+
+Per il tempo di esecuzione, meglio guardare il numero di passi elementari eseguiti dall'algoritmo, al variare della dimensione dell'input : funzione $T(n)$, soprattutto per n grandi
+
+#### Calcolabilità vs  Complessità
