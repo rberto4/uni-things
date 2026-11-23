@@ -74,3 +74,33 @@ Gli algoritmi che presentiamo possono essere implementati su macchine a registri
 Per il tempo di esecuzione, meglio guardare il numero di passi elementari eseguiti dall'algoritmo, al variare della dimensione dell'input : funzione $T(n)$, soprattutto per n grandi
 
 #### Calcolabilità vs  Complessità
+- calcolabilità = problema non decidibile (possibili o no)
+- complessità = problema intrattabile (facili o difficili)
+è in funzione della taglia
+- Taglia = dimensione del problema
+
+Ci serve un modo per descrivere la dimensione di T(n) a meno di costanti moltiplicative
+
+diremo che $f(n) = O(g(n))$ se $f(n) <= C*g(n)$ per qualche costante C, ed n abbastanza grande.
+
+Alcuni algoritmi sono intrinsecamente esponenziali, come ad esempio 
+Calcolo numero permutazioni, torre di Hanoi
+
+#### Fase implementativa
+
+Comporta aggiungere i dettagli dati dallo specifico linguaggio di programmazione, non specificati dallo pseudo-codice
+Una data implementazione va testata su dati reali, perché può risultare meno efficiente rispetto all'analisi teorica.
+-> Analisi sperimentale
+#### Esempio java
+
+Restituisce $true$ se una lista contiene un duplicato 
+altrimenti $false$
+```java
+
+```
+
+### Slide 02
+
+#### Notazione asintotica
+$F(n)$ = tempo di esecuzione / occupazione di memoria di un algoritmo, su input di dimensione n,  a meno di costanti moltiplicative
+
